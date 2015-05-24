@@ -49,3 +49,17 @@ impl Claims {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use claims::Claims;
+
+    #[test]
+    fn parse() {
+        let enc = "ew0KICAiaXNzIjogIm1pa2t5YW5nLmNvbSIsDQogICJleHAiOiAxMzAyMzE5MTAwLA0KICAibmFtZSI6ICJNaWNoYWVsIFlhbmciLA0KICAiYWRtaW4iOiB0cnVlDQp9";
+        let claims = Claims::parse(enc).unwrap();
+
+        assert_eq!(claims.reg.iss.unwrap(), "mikkyang.com");
+        assert_eq!(claims.reg.exp.unwrap(), 1302319100);
+    }
+}
