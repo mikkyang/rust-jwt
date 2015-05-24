@@ -17,3 +17,17 @@ impl Header {
         Ok(header)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use header::Header;
+
+    #[test]
+    fn parse() {
+        let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+        let header = Header::parse(enc).unwrap();
+
+        assert_eq!(header.typ, "JWT");
+        assert_eq!(header.alg.unwrap(), "HS256");
+    }
+}
