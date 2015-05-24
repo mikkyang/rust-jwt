@@ -1,3 +1,4 @@
+extern crate crypto;
 extern crate rustc_serialize;
 
 pub mod error;
