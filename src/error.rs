@@ -2,6 +2,7 @@ use std::string::FromUtf8Error;
 use rustc_serialize::base64::FromBase64Error;
 use rustc_serialize::json;
 
+#[derive(Debug)]
 pub enum Error {
     Format,
     Base64,
