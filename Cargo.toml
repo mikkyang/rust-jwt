@@ -2,3 +2,6 @@
 name = "jwt"
 version = "0.1.0"
 authors = ["Michael Yang <mikkyangg@gmail.com>"]
+
+[dependencies]
+rustc-serialize = "*"
