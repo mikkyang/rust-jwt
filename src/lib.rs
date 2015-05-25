@@ -14,9 +14,10 @@ use rustc_serialize::base64::{
     Newline,
     ToBase64,
 };
-use error::Error;
-use header::Header;
-use claims::Claims;
+pub use error::Error;
+pub use header::Header;
+pub use claims::Claims;
+pub use claims::Registered;
 
 pub mod error;
 pub mod header;
