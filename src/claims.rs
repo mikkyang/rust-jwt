@@ -12,13 +12,13 @@ use rustc_serialize::json::{
 use error::Error;
 use BASE_CONFIG;
 
-#[derive(Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Claims {
     pub reg: Registered,
     private: BTreeMap<String, Json>,
 }
 
-#[derive(Default, RustcDecodable, RustcEncodable)]
+#[derive(Debug, Default, PartialEq, RustcDecodable, RustcEncodable)]
 pub struct Registered {
     pub iss: Option<String>,
     pub sub: Option<String>,
@@ -101,9 +101,6 @@ mod tests {
         claims.reg.iss = Some("mikkyang.com".into());
         claims.reg.exp = Some(1302319100);
         let enc = claims.encode().unwrap();
-        let same = Claims::parse(&*enc).unwrap();
-
-        assert_eq!(claims.reg.iss, same.reg.iss);
-        assert_eq!(claims.reg.exp, same.reg.exp);
+        assert_eq!(claims, Claims::parse(&*enc).unwrap());
     }
 }

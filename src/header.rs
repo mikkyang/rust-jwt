@@ -7,7 +7,7 @@ use rustc_serialize::base64::{
 use error::Error;
 use BASE_CONFIG;
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub struct Header {
     pub typ: String,
     pub alg: Option<String>,
@@ -55,10 +55,6 @@ mod tests {
     fn roundtrip() {
         let header: Header = Default::default();
         let enc = header.encode().unwrap();
-
-        let same = Header::parse(&*enc).unwrap();
-
-        assert_eq!(header.typ, same.typ);
-        assert_eq!(header.alg, same.alg);
+        assert_eq!(header, Header::parse(&*enc).unwrap());
     }
 }

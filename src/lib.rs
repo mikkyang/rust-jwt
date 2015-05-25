@@ -22,7 +22,7 @@ pub mod error;
 pub mod header;
 pub mod claims;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Token {
     raw: Option<String>,
     header: Header,
@@ -60,6 +60,13 @@ impl Token {
 
         let sig = sign(&*data, key, digest);
         Ok(format!("{}.{}", data, sig))
+    }
+}
+
+impl PartialEq for Token {
+    fn eq(&self, other: &Token) -> bool {
+        self.header == other.header &&
+        self.claims == other.claims
     }
 }
 
@@ -139,8 +146,7 @@ mod tests {
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
 
-        assert_eq!(same.header.typ, "JWT");
-        assert_eq!(same.header.alg, Some("HS256".into()));
+        assert_eq!(token, same);
         assert!(same.verify(key, Sha256::new()));
     }
 }
