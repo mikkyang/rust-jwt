@@ -2,6 +2,13 @@
 name = "jwt"
 version = "0.1.0"
 authors = ["Michael Yang <mikkyangg@gmail.com>"]
+description = "JSON Web Token library"
+documentation = "http://mikkyang.github.io/rust-jwt/doc/jwt/index.html"
+homepage = "http://github.com/mikkyang/jwt"
+repository = "http://github.com/mikkyang/jwt"
+readme = "README.md"
+keywords = ["JWT", "token", "web"]
+license = "MIT"
 
 [dependencies]
 rust-crypto = "*"
