@@ -10,10 +10,17 @@ use rustc_serialize::base64::{
     Newline,
     ToBase64,
 };
+use header::Header;
+use claims::Claims;
 
 pub mod error;
 pub mod header;
 pub mod claims;
+
+pub struct Token {
+    header: Header,
+    claims: Claims,
+}
 
 const BASE_CONFIG: base64::Config = base64::Config {
     char_set: CharacterSet::Standard,
