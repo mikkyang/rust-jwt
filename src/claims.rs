@@ -1,8 +1,17 @@
 use std::collections::BTreeMap;
+use std::default::Default;
 use rustc_serialize::Decodable;
-use rustc_serialize::base64::FromBase64;
-use rustc_serialize::json::{Decoder, Json};
+use rustc_serialize::base64::{
+    FromBase64,
+    ToBase64,
+};
+use rustc_serialize::json::{
+    self,
+    Decoder,
+    Json,
+};
 use error::Error;
+use BASE_CONFIG;
 
 pub struct Claims {
     pub reg: Registered,
@@ -20,7 +29,28 @@ pub struct Registered {
     pub jti: Option<String>,
 }
 
+impl Default for Registered {
+    fn default() -> Registered {
+        Registered {
+            iss: None,
+            sub: None,
+            aud: None,
+            exp: None,
+            nbf: None,
+            iat: None,
+            jti: None,
+        }
+    }
+}
+
 impl Claims {
+    pub fn new(reg: Registered) -> Claims {
+        Claims {
+            reg: reg,
+            private: BTreeMap::new(),
+        }
+    }
+
     pub fn parse(raw: &str) -> Result<Claims, Error> {
         let data = try!(raw.from_base64());
         let s = try!(String::from_utf8(data));
@@ -48,10 +78,26 @@ impl Claims {
             private: pri,
         })
     }
+
+    pub fn encode(&self) -> Result<String, Error> {
+        // Extremely inefficient
+        let s = try!(json::encode(&self.reg));
+        let mut tree = match try!(Json::from_str(&*s)) {
+            Json::Object(x) => x,
+            _ => return Err(Error::Format),
+        };
+
+        tree.extend(self.private.clone());
+
+        let s = try!(json::encode(&tree));
+        let enc = (&*s).as_bytes().to_base64(BASE_CONFIG);
+        Ok(enc)
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::default::Default;
     use claims::Claims;
 
     #[test]
@@ -61,5 +107,17 @@ mod tests {
 
         assert_eq!(claims.reg.iss.unwrap(), "mikkyang.com");
         assert_eq!(claims.reg.exp.unwrap(), 1302319100);
+    }
+
+    #[test]
+    fn roundtrip() {
+        let mut claims = Claims::new(Default::default());
+        claims.reg.iss = Some("mikkyang.com".into());
+        claims.reg.exp = Some(1302319100);
+        let enc = claims.encode().unwrap();
+        let same = Claims::parse(&*enc).unwrap();
+
+        assert_eq!(claims.reg.iss, same.reg.iss);
+        assert_eq!(claims.reg.exp, same.reg.exp);
     }
 }
