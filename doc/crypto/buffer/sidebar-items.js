@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BorrowedWriteBuffer",""],["OwnedReadBuffer",""],["OwnedWriteBuffer",""],["RefReadBuffer",""],["RefWriteBuffer",""]],"enum":[["BufferResult",""]],"trait":[["ReadBuffer",""],["WriteBuffer",""]]});
