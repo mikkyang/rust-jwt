@@ -5,19 +5,19 @@ use rustc_serialize::json::{Decoder, Json};
 use error::Error;
 
 pub struct Claims {
-    reg: Registered,
+    pub reg: Registered,
     private: BTreeMap<String, Json>,
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Registered {
-    iss: Option<String>,
-    sub: Option<String>,
-    aud: Option<String>,
-    exp: Option<u64>,
-    nbf: Option<u64>,
-    iat: Option<u64>,
-    jti: Option<String>,
+    pub iss: Option<String>,
+    pub sub: Option<String>,
+    pub aud: Option<String>,
+    pub exp: Option<u64>,
+    pub nbf: Option<u64>,
+    pub iat: Option<u64>,
+    pub jti: Option<String>,
 }
 
 impl Claims {
