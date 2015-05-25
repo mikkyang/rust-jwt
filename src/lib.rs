@@ -14,6 +14,7 @@ use rustc_serialize::base64::{
     Newline,
     ToBase64,
 };
+use error::Error;
 use header::Header;
 use claims::Claims;
 
@@ -22,8 +23,34 @@ pub mod header;
 pub mod claims;
 
 pub struct Token {
+    raw: Option<String>,
     header: Header,
     claims: Claims,
+}
+
+impl Token {
+    pub fn parse(raw: &str) -> Result<Token, Error> {
+        let pieces: Vec<_> = raw.split('.').collect();
+
+        Ok(Token {
+            raw: Some(raw.into()),
+            header: try!(Header::parse(pieces[0])),
+            claims: try!(Claims::parse(pieces[1])),
+        })
+    }
+
+    pub fn verify<D: Digest>(&self, key: &str, digest: D) -> bool {
+        let raw = match self.raw {
+            Some(ref s) => s,
+            None => return false,
+        };
+
+        let pieces: Vec<_> = raw.rsplitn(2, '.').collect();
+        let sig = pieces[0];
+        let data = pieces[1];
+
+        verify(sig, data, key, digest)
+    }
 }
 
 const BASE_CONFIG: base64::Config = base64::Config {
@@ -59,6 +86,7 @@ fn verify<D: Digest>(target: &str, data: &str, key: &str, digest: D) -> bool {
 mod tests {
     use sign;
     use verify;
+    use Token;
     use crypto::sha2::Sha256;
 
     #[test]
@@ -81,5 +109,16 @@ mod tests {
         let data = format!("{}.{}", header, claims);
 
         assert!(verify(target, &*data, "secret", Sha256::new()));
+    }
+
+    #[test]
+    pub fn raw_data() {
+        let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+        let token = Token::parse(raw).unwrap();
+
+        {
+            assert_eq!(token.header.alg, Some("HS256".into()));
+        }
+        assert!(token.verify("secret", Sha256::new()));
     }
 }
