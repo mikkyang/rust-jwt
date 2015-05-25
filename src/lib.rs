@@ -30,6 +30,14 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn new(header: Header, claims: Claims) -> Token {
+        Token {
+            header: header,
+            claims: claims,
+            ..Default::default()
+        }
+    }
+
     /// Parse a token from a string.
     pub fn parse(raw: &str) -> Result<Token, Error> {
         let pieces: Vec<_> = raw.split('.').collect();
