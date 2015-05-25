@@ -22,6 +22,7 @@ pub mod error;
 pub mod header;
 pub mod claims;
 
+#[derive(Default)]
 pub struct Token {
     raw: Option<String>,
     header: Header,
@@ -96,8 +97,6 @@ mod tests {
     use sign;
     use verify;
     use Token;
-    use header::Header;
-    use claims::Claims;
     use crypto::sha2::Sha256;
 
     #[test]
@@ -135,11 +134,7 @@ mod tests {
 
     #[test]
     pub fn roundtrip() {
-        let token = Token {
-            raw: None,
-            header: Default::default(),
-            claims: Claims::new(Default::default()),
-        };
+        let token: Token = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();

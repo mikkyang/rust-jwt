@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::default::Default;
 use rustc_serialize::Decodable;
 use rustc_serialize::base64::{
     FromBase64,
@@ -13,12 +12,13 @@ use rustc_serialize::json::{
 use error::Error;
 use BASE_CONFIG;
 
+#[derive(Default)]
 pub struct Claims {
     pub reg: Registered,
     private: BTreeMap<String, Json>,
 }
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(Default, RustcDecodable, RustcEncodable)]
 pub struct Registered {
     pub iss: Option<String>,
     pub sub: Option<String>,
@@ -27,20 +27,6 @@ pub struct Registered {
     pub nbf: Option<u64>,
     pub iat: Option<u64>,
     pub jti: Option<String>,
-}
-
-impl Default for Registered {
-    fn default() -> Registered {
-        Registered {
-            iss: None,
-            sub: None,
-            aud: None,
-            exp: None,
-            nbf: None,
-            iat: None,
-            jti: None,
-        }
-    }
 }
 
 impl Claims {
@@ -111,7 +97,7 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        let mut claims = Claims::new(Default::default());
+        let mut claims: Claims = Default::default();
         claims.reg.iss = Some("mikkyang.com".into());
         claims.reg.exp = Some(1302319100);
         let enc = claims.encode().unwrap();
