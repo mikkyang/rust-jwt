@@ -9,7 +9,7 @@ use BASE_CONFIG;
 
 #[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub struct Header {
-    pub typ: String,
+    pub typ: HeaderType,
     pub alg: Option<String>,
 }
 
@@ -29,10 +29,15 @@ impl Header {
     }
 }
 
+#[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
+pub enum HeaderType {
+    JWT,
+}
+
 impl Default for Header {
     fn default() -> Header {
         Header {
-            typ: "JWT".into(),
+            typ: HeaderType::JWT,
             alg: Some("HS256".into()),
         }
     }
@@ -40,14 +45,17 @@ impl Default for Header {
 
 #[cfg(test)]
 mod tests {
-    use header::Header;
+    use header::{
+        Header,
+        HeaderType,
+    };
 
     #[test]
     fn parse() {
         let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
         let header = Header::parse(enc).unwrap();
 
-        assert_eq!(header.typ, "JWT");
+        assert_eq!(header.typ, HeaderType::JWT);
         assert_eq!(header.alg.unwrap(), "HS256");
     }
 
