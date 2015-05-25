@@ -15,7 +15,7 @@ use BASE_CONFIG;
 #[derive(Debug, Default, PartialEq)]
 pub struct Claims {
     pub reg: Registered,
-    private: BTreeMap<String, Json>,
+    pub private: BTreeMap<String, Json>,
 }
 
 #[derive(Debug, Default, PartialEq, RustcDecodable, RustcEncodable)]
