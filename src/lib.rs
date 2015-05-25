@@ -26,8 +26,8 @@ pub mod claims;
 #[derive(Debug, Default)]
 pub struct Token {
     raw: Option<String>,
-    header: Header,
-    claims: Claims,
+    pub header: Header,
+    pub claims: Claims,
 }
 
 impl Token {
