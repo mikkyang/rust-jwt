@@ -40,6 +40,7 @@ impl Claims {
         }
     }
 
+    /// Parse claims from a string.
     pub fn parse(raw: &str) -> Result<Claims, Error> {
         let data = try!(raw.from_base64());
         let s = try!(String::from_utf8(data));
@@ -68,6 +69,7 @@ impl Claims {
         })
     }
 
+    /// Encode claims to a string.
     pub fn encode(&self) -> Result<String, Error> {
         // Extremely inefficient
         let s = try!(json::encode(&self.reg));

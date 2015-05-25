@@ -14,6 +14,7 @@ pub struct Header {
 }
 
 impl Header {
+    /// Parse a header from a string.
     pub fn parse(raw: &str) -> Result<Header, Error> {
         let data = try!(raw.from_base64());
         let s = try!(String::from_utf8(data));
@@ -22,6 +23,7 @@ impl Header {
         Ok(header)
     }
 
+    /// Encode a header to a string.
     pub fn encode(&self) -> Result<String, Error> {
         let s = try!(json::encode(&self));
         let enc = (&*s).as_bytes().to_base64(BASE_CONFIG);
