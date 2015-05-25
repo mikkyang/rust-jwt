@@ -104,6 +104,7 @@ mod tests {
     use sign;
     use verify;
     use Token;
+    use header::Algorithm::HS256;
     use crypto::sha2::Sha256;
 
     #[test]
@@ -134,7 +135,7 @@ mod tests {
         let token = Token::parse(raw).unwrap();
 
         {
-            assert_eq!(token.header.alg, Some("HS256".into()));
+            assert_eq!(token.header.alg, Some(HS256));
         }
         assert!(token.verify("secret".as_bytes(), Sha256::new()));
     }
