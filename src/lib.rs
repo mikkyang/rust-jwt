@@ -39,7 +39,7 @@ impl Token {
         })
     }
 
-    pub fn verify<D: Digest>(&self, key: &str, digest: D) -> bool {
+    pub fn verify<D: Digest>(&self, key: &[u8], digest: D) -> bool {
         let raw = match self.raw {
             Some(ref s) => s,
             None => return false,
@@ -52,7 +52,7 @@ impl Token {
         verify(sig, data, key, digest)
     }
 
-    pub fn signed<D: Digest>(&self, key: &str, digest: D) -> Result<String, Error> {
+    pub fn signed<D: Digest>(&self, key: &[u8], digest: D) -> Result<String, Error> {
         let header = try!(self.header.encode());
         let claims = try!(self.claims.encode());
         let data = format!("{}.{}", header, claims);
@@ -69,8 +69,8 @@ const BASE_CONFIG: base64::Config = base64::Config {
     line_length: None,
 };
 
-fn sign<D: Digest>(data: &str, key: &str, digest: D) -> String {
-    let mut hmac = Hmac::new(digest, key.as_bytes());
+fn sign<D: Digest>(data: &str, key: &[u8], digest: D) -> String {
+    let mut hmac = Hmac::new(digest, key);
     hmac.input(data.as_bytes());
 
     let mac = hmac.result();
@@ -78,14 +78,14 @@ fn sign<D: Digest>(data: &str, key: &str, digest: D) -> String {
     (*code).to_base64(BASE_CONFIG)
 }
 
-fn verify<D: Digest>(target: &str, data: &str, key: &str, digest: D) -> bool {
+fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
     let target_bytes = match target.from_base64() {
         Ok(x) => x,
         Err(_) => return false,
     };
     let target_mac = MacResult::new_from_owned(target_bytes);
 
-    let mut hmac = Hmac::new(digest, key.as_bytes());
+    let mut hmac = Hmac::new(digest, key);
     hmac.input(data.as_bytes());
 
     hmac.result() == target_mac
@@ -107,7 +107,7 @@ mod tests {
         let real_sig = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
         let data = format!("{}.{}", header, claims);
 
-        let sig = sign(&*data, "secret", Sha256::new());
+        let sig = sign(&*data, "secret".as_bytes(), Sha256::new());
 
         assert_eq!(sig, real_sig);
     }
@@ -119,7 +119,7 @@ mod tests {
         let target = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
         let data = format!("{}.{}", header, claims);
 
-        assert!(verify(target, &*data, "secret", Sha256::new()));
+        assert!(verify(target, &*data, "secret".as_bytes(), Sha256::new()));
     }
 
     #[test]
@@ -130,7 +130,7 @@ mod tests {
         {
             assert_eq!(token.header.alg, Some("HS256".into()));
         }
-        assert!(token.verify("secret", Sha256::new()));
+        assert!(token.verify("secret".as_bytes(), Sha256::new()));
     }
 
     #[test]
@@ -140,7 +140,7 @@ mod tests {
             header: Default::default(),
             claims: Claims::new(Default::default()),
         };
-        let key = "secret";
+        let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
 
