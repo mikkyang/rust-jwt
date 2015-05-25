@@ -1,3 +1,4 @@
+use std::default::Default;
 use rustc_serialize::json;
 use rustc_serialize::base64::FromBase64;
 use error::Error;
@@ -15,6 +16,15 @@ impl Header {
         let header = try!(json::decode(&*s));
 
         Ok(header)
+    }
+}
+
+impl Default for Header {
+    fn default() -> Header {
+        Header {
+            typ: "JWT".into(),
+            alg: Some("HS256".into()),
+        }
     }
 }
 
