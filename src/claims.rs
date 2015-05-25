@@ -29,6 +29,9 @@ pub struct Registered {
     pub jti: Option<String>,
 }
 
+/// JWT Claims. Registered claims are directly accessible via the `Registered`
+/// struct embedded, while private fields are a map that contains `Json`
+/// values.
 impl Claims {
     pub fn new(reg: Registered) -> Claims {
         Claims {
