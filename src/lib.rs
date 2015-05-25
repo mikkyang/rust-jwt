@@ -30,6 +30,7 @@ pub struct Token {
 }
 
 impl Token {
+    /// Parse a token from a string.
     pub fn parse(raw: &str) -> Result<Token, Error> {
         let pieces: Vec<_> = raw.split('.').collect();
 
@@ -40,6 +41,8 @@ impl Token {
         })
     }
 
+    /// Verify a parsed token with a key and a given hashing algorithm.
+    /// Make sure to check the token's algorithm before applying.
     pub fn verify<D: Digest>(&self, key: &[u8], digest: D) -> bool {
         let raw = match self.raw {
             Some(ref s) => s,
@@ -53,6 +56,7 @@ impl Token {
         verify(sig, data, key, digest)
     }
 
+    /// Generate the signed token from a key and a given hashing algorithm.
     pub fn signed<D: Digest>(&self, key: &[u8], digest: D) -> Result<String, Error> {
         let header = try!(self.header.encode());
         let claims = try!(self.claims.encode());
