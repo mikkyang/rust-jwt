@@ -51,6 +51,15 @@ impl Token {
 
         verify(sig, data, key, digest)
     }
+
+    pub fn signed<D: Digest>(&self, key: &str, digest: D) -> Result<String, Error> {
+        let header = try!(self.header.encode());
+        let claims = try!(self.claims.encode());
+        let data = format!("{}.{}", header, claims);
+
+        let sig = sign(&*data, key, digest);
+        Ok(format!("{}.{}", data, sig))
+    }
 }
 
 const BASE_CONFIG: base64::Config = base64::Config {
@@ -87,6 +96,8 @@ mod tests {
     use sign;
     use verify;
     use Token;
+    use header::Header;
+    use claims::Claims;
     use crypto::sha2::Sha256;
 
     #[test]
@@ -120,5 +131,21 @@ mod tests {
             assert_eq!(token.header.alg, Some("HS256".into()));
         }
         assert!(token.verify("secret", Sha256::new()));
+    }
+
+    #[test]
+    pub fn roundtrip() {
+        let token = Token {
+            raw: None,
+            header: Default::default(),
+            claims: Claims::new(Default::default()),
+        };
+        let key = "secret";
+        let raw = token.signed(key, Sha256::new()).unwrap();
+        let same = Token::parse(&*raw).unwrap();
+
+        assert_eq!(same.header.typ, "JWT");
+        assert_eq!(same.header.alg, Some("HS256".into()));
+        assert!(same.verify(key, Sha256::new()));
     }
 }
