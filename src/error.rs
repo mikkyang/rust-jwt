@@ -7,6 +7,7 @@ pub enum Error {
     Format,
     Base64,
     Decode,
+    Encode,
     Json,
     Parse,
     Utf8,
@@ -22,6 +23,7 @@ macro_rules! error_wrap {
 
 error_wrap!(FromBase64Error, Error::Base64);
 error_wrap!(json::DecoderError, Error::Decode);
+error_wrap!(json::EncoderError, Error::Encode);
 error_wrap!(json::ErrorCode, Error::Json);
 error_wrap!(json::ParserError, Error::Parse);
 error_wrap!(FromUtf8Error, Error::Utf8);
