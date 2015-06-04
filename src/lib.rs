@@ -2,11 +2,6 @@ extern crate crypto;
 extern crate rustc_serialize;
 
 use crypto::digest::Digest;
-use crypto::hmac::Hmac;
-use crypto::mac::{
-    Mac,
-    MacResult,
-};
 use rustc_serialize::{
     json,
     Decodable,
@@ -27,6 +22,7 @@ pub use claims::Registered;
 pub mod error;
 pub mod header;
 pub mod claims;
+mod crypt;
 
 #[derive(Debug, Default)]
 pub struct Token<H, C>
@@ -92,7 +88,7 @@ impl<H, C> Token<H, C>
         let sig = pieces[0];
         let data = pieces[1];
 
-        verify(sig, data, key, digest)
+        crypt::verify(sig, data, key, digest)
     }
 
     /// Generate the signed token from a key and a given hashing algorithm.
@@ -101,7 +97,7 @@ impl<H, C> Token<H, C>
         let claims = try!(self.claims.to_base64());
         let data = format!("{}.{}", header, claims);
 
-        let sig = sign(&*data, key, digest);
+        let sig = crypt::sign(&*data, key, digest);
         Ok(format!("{}.{}", data, sig))
     }
 }
@@ -121,32 +117,12 @@ const BASE_CONFIG: base64::Config = base64::Config {
     line_length: None,
 };
 
-fn sign<D: Digest>(data: &str, key: &[u8], digest: D) -> String {
-    let mut hmac = Hmac::new(digest, key);
-    hmac.input(data.as_bytes());
-
-    let mac = hmac.result();
-    let code = mac.code();
-    (*code).to_base64(BASE_CONFIG)
-}
-
-fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
-    let target_bytes = match target.from_base64() {
-        Ok(x) => x,
-        Err(_) => return false,
-    };
-    let target_mac = MacResult::new_from_owned(target_bytes);
-
-    let mut hmac = Hmac::new(digest, key);
-    hmac.input(data.as_bytes());
-
-    hmac.result() == target_mac
-}
-
 #[cfg(test)]
 mod tests {
-    use sign;
-    use verify;
+    use crypt::{
+        sign,
+        verify,
+    };
     use Claims;
     use Token;
     use header::Algorithm::HS256;
