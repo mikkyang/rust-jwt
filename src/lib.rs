@@ -7,6 +7,11 @@ use crypto::mac::{
     Mac,
     MacResult,
 };
+use rustc_serialize::{
+    json,
+    Decodable,
+    Encodable,
+};
 use rustc_serialize::base64::{
     self,
     CharacterSet,
@@ -28,6 +33,31 @@ pub struct Token {
     raw: Option<String>,
     pub header: Header,
     pub claims: Claims,
+}
+
+pub trait Component {
+    fn parse(raw: &str) -> Result<Self, Error>;
+    fn encode(&self) -> Result<String, Error>;
+}
+
+impl<T> Component for T
+    where T: Encodable + Decodable + Sized {
+
+    /// Parse from a string.
+    fn parse(raw: &str) -> Result<T, Error> {
+        let data = try!(raw.from_base64());
+        let s = try!(String::from_utf8(data));
+        let header = try!(json::decode(&*s));
+
+        Ok(header)
+    }
+
+    /// Encode to a string.
+    fn encode(&self) -> Result<String, Error> {
+        let s = try!(json::encode(&self));
+        let enc = (&*s).as_bytes().to_base64(BASE_CONFIG);
+        Ok(enc)
+    }
 }
 
 impl Token {
@@ -67,7 +97,7 @@ impl Token {
 
     /// Generate the signed token from a key and a given hashing algorithm.
     pub fn signed<D: Digest>(&self, key: &[u8], digest: D) -> Result<String, Error> {
-        let header = try!(self.header.encode());
+        let header = try!(Component::encode(&self.header));
         let claims = try!(self.claims.encode());
         let data = format!("{}.{}", header, claims);
 
