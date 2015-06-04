@@ -17,3 +17,10 @@ and this to your crate root:
 ```rust
 extern crate jwt;
 ```
+
+## Usage
+
+The library provides a `Token` type that wraps a header and claims. The header
+and claims can be any types that implement the `Component` trait, which is
+automatically implemented for types that implement the `Sized`, `Encodable`,
+and `Decodable` traits. See the examples.
