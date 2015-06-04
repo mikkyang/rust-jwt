@@ -90,7 +90,7 @@ impl Component for Claims {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use claims::Claims;
+    use claims::{Claims, Registered};
     use Component;
 
     #[test]
@@ -100,6 +100,15 @@ mod tests {
 
         assert_eq!(claims.reg.iss.unwrap(), "mikkyang.com");
         assert_eq!(claims.reg.exp.unwrap(), 1302319100);
+    }
+
+    #[test]
+    fn multiple_types() {
+        let enc = "ew0KICAiaXNzIjogIm1pa2t5YW5nLmNvbSIsDQogICJleHAiOiAxMzAyMzE5MTAwLA0KICAibmFtZSI6ICJNaWNoYWVsIFlhbmciLA0KICAiYWRtaW4iOiB0cnVlDQp9";
+        let claims = Registered::from_base64(enc).unwrap();
+
+        assert_eq!(claims.iss.unwrap(), "mikkyang.com");
+        assert_eq!(claims.exp.unwrap(), 1302319100);
     }
 
     #[test]
