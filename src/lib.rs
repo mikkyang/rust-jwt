@@ -37,22 +37,22 @@ pub struct Token<H>
 }
 
 pub trait Component {
-    fn parse(raw: &str) -> Result<Self, Error>;
-    fn encode(&self) -> Result<String, Error>;
+    fn from_base64(raw: &str) -> Result<Self, Error>;
+    fn to_base64(&self) -> Result<String, Error>;
 }
 
 impl<T> Component for T
     where T: Encodable + Decodable + Sized {
 
     /// Parse from a string.
-    fn parse(raw: &str) -> Result<T, Error> {
+    fn from_base64(raw: &str) -> Result<T, Error> {
         let data = try!(raw.from_base64());
         let s = try!(String::from_utf8(data));
         Ok(try!(json::decode(&*s)))
     }
 
     /// Encode to a string.
-    fn encode(&self) -> Result<String, Error> {
+    fn to_base64(&self) -> Result<String, Error> {
         let s = try!(json::encode(&self));
         let enc = (&*s).as_bytes().to_base64(BASE_CONFIG);
         Ok(enc)
@@ -70,17 +70,17 @@ impl<H> Token<H>
     }
 
     /// Parse a token from a string.
-    pub fn parse(raw: &str) -> Result<Token<H>, Error> {
+    pub fn from_base64(raw: &str) -> Result<Token<H>, Error> {
         let pieces: Vec<_> = raw.split('.').collect();
 
         Ok(Token {
             raw: Some(raw.into()),
-            header: try!(Component::parse(pieces[0])),
-            claims: try!(Claims::parse(pieces[1])),
+            header: try!(Component::from_base64(pieces[0])),
+            claims: try!(Claims::from_base64(pieces[1])),
         })
     }
 
-    /// Verify a parsed token with a key and a given hashing algorithm.
+    /// Verify a from_base64d token with a key and a given hashing algorithm.
     /// Make sure to check the token's algorithm before applying.
     pub fn verify<D: Digest>(&self, key: &[u8], digest: D) -> bool {
         let raw = match self.raw {
@@ -97,8 +97,8 @@ impl<H> Token<H>
 
     /// Generate the signed token from a key and a given hashing algorithm.
     pub fn signed<D: Digest>(&self, key: &[u8], digest: D) -> Result<String, Error> {
-        let header = try!(Component::encode(&self.header));
-        let claims = try!(self.claims.encode());
+        let header = try!(Component::to_base64(&self.header));
+        let claims = try!(self.claims.to_base64());
         let data = format!("{}.{}", header, claims);
 
         let sig = sign(&*data, key, digest);
@@ -177,7 +177,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<Header>::parse(raw).unwrap();
+        let token = Token::<Header>::from_base64(raw).unwrap();
 
         {
             assert_eq!(token.header.alg, Some(HS256));
@@ -190,7 +190,7 @@ mod tests {
         let token: Token<Header> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
-        let same = Token::parse(&*raw).unwrap();
+        let same = Token::from_base64(&*raw).unwrap();
 
         assert_eq!(token, same);
         assert!(same.verify(key, Sha256::new()));

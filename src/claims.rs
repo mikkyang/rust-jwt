@@ -41,7 +41,7 @@ impl Claims {
     }
 
     /// Parse claims from a string.
-    pub fn parse(raw: &str) -> Result<Claims, Error> {
+    pub fn from_base64(raw: &str) -> Result<Claims, Error> {
         let data = try!(raw.from_base64());
         let s = try!(String::from_utf8(data));
         let tree = match try!(Json::from_str(&*s)) {
@@ -70,7 +70,7 @@ impl Claims {
     }
 
     /// Encode claims to a string.
-    pub fn encode(&self) -> Result<String, Error> {
+    pub fn to_base64(&self) -> Result<String, Error> {
         // Extremely inefficient
         let s = try!(json::encode(&self.reg));
         let mut tree = match try!(Json::from_str(&*s)) {
@@ -92,9 +92,9 @@ mod tests {
     use claims::Claims;
 
     #[test]
-    fn parse() {
+    fn from_base64() {
         let enc = "ew0KICAiaXNzIjogIm1pa2t5YW5nLmNvbSIsDQogICJleHAiOiAxMzAyMzE5MTAwLA0KICAibmFtZSI6ICJNaWNoYWVsIFlhbmciLA0KICAiYWRtaW4iOiB0cnVlDQp9";
-        let claims = Claims::parse(enc).unwrap();
+        let claims = Claims::from_base64(enc).unwrap();
 
         assert_eq!(claims.reg.iss.unwrap(), "mikkyang.com");
         assert_eq!(claims.reg.exp.unwrap(), 1302319100);
@@ -105,7 +105,7 @@ mod tests {
         let mut claims: Claims = Default::default();
         claims.reg.iss = Some("mikkyang.com".into());
         claims.reg.exp = Some(1302319100);
-        let enc = claims.encode().unwrap();
-        assert_eq!(claims, Claims::parse(&*enc).unwrap());
+        let enc = claims.to_base64().unwrap();
+        assert_eq!(claims, Claims::from_base64(&*enc).unwrap());
     }
 }

@@ -37,9 +37,9 @@ mod tests {
     };
 
     #[test]
-    fn parse() {
+    fn from_base64() {
         let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-        let header = Header::parse(enc).unwrap();
+        let header = Header::from_base64(enc).unwrap();
 
         assert_eq!(header.typ, HeaderType::JWT);
         assert_eq!(header.alg.unwrap(), Algorithm::HS256);
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn roundtrip() {
         let header: Header = Default::default();
-        let enc = Component::encode(&header).unwrap();
-        assert_eq!(header, Header::parse(&*enc).unwrap());
+        let enc = Component::to_base64(&header).unwrap();
+        assert_eq!(header, Header::from_base64(&*enc).unwrap());
     }
 }
