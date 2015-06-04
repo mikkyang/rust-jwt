@@ -29,11 +29,11 @@ pub mod header;
 pub mod claims;
 
 #[derive(Debug, Default)]
-pub struct Token<H>
-    where H: Component {
+pub struct Token<H, C>
+    where H: Component, C: Component {
     raw: Option<String>,
     pub header: H,
-    pub claims: Claims,
+    pub claims: C,
 }
 
 pub trait Component {
@@ -59,9 +59,9 @@ impl<T> Component for T
     }
 }
 
-impl<H> Token<H>
-    where H: Component {
-    pub fn new(header: H, claims: Claims) -> Token<H> {
+impl<H, C> Token<H, C>
+    where H: Component, C: Component {
+    pub fn new(header: H, claims: C) -> Token<H, C> {
         Token {
             raw: None,
             header: header,
@@ -70,13 +70,13 @@ impl<H> Token<H>
     }
 
     /// Parse a token from a string.
-    pub fn from_base64(raw: &str) -> Result<Token<H>, Error> {
+    pub fn from_base64(raw: &str) -> Result<Token<H, C>, Error> {
         let pieces: Vec<_> = raw.split('.').collect();
 
         Ok(Token {
             raw: Some(raw.into()),
             header: try!(Component::from_base64(pieces[0])),
-            claims: try!(Claims::from_base64(pieces[1])),
+            claims: try!(Component::from_base64(pieces[1])),
         })
     }
 
@@ -106,9 +106,9 @@ impl<H> Token<H>
     }
 }
 
-impl<H> PartialEq for Token<H>
-    where H: Component + PartialEq {
-    fn eq(&self, other: &Token<H>) -> bool {
+impl<H, C> PartialEq for Token<H, C>
+    where H: Component + PartialEq, C: Component + PartialEq{
+    fn eq(&self, other: &Token<H, C>) -> bool {
         self.header == other.header &&
         self.claims == other.claims
     }
@@ -147,6 +147,7 @@ fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
 mod tests {
     use sign;
     use verify;
+    use Claims;
     use Token;
     use header::Algorithm::HS256;
     use header::Header;
@@ -177,7 +178,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<Header>::from_base64(raw).unwrap();
+        let token = Token::<Header, Claims>::from_base64(raw).unwrap();
 
         {
             assert_eq!(token.header.alg, Some(HS256));
@@ -187,7 +188,7 @@ mod tests {
 
     #[test]
     pub fn roundtrip() {
-        let token: Token<Header> = Default::default();
+        let token: Token<Header, Claims> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::from_base64(&*raw).unwrap();
