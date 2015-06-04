@@ -29,6 +29,7 @@ impl Default for Header {
 
 #[cfg(test)]
 mod tests {
+    use Component;
     use header::{
         Algorithm,
         Header,
@@ -47,7 +48,7 @@ mod tests {
     #[test]
     fn roundtrip() {
         let header: Header = Default::default();
-        let enc = header.encode().unwrap();
+        let enc = Component::encode(&header).unwrap();
         assert_eq!(header, Header::parse(&*enc).unwrap());
     }
 }
