@@ -48,9 +48,7 @@ impl<T> Component for T
     fn parse(raw: &str) -> Result<T, Error> {
         let data = try!(raw.from_base64());
         let s = try!(String::from_utf8(data));
-        let header = try!(json::decode(&*s));
-
-        Ok(header)
+        Ok(try!(json::decode(&*s)))
     }
 
     /// Encode to a string.
