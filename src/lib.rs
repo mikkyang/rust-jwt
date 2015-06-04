@@ -70,7 +70,7 @@ impl<H, C> Token<H, C>
     }
 
     /// Parse a token from a string.
-    pub fn from_base64(raw: &str) -> Result<Token<H, C>, Error> {
+    pub fn parse(raw: &str) -> Result<Token<H, C>, Error> {
         let pieces: Vec<_> = raw.split('.').collect();
 
         Ok(Token {
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<Header, Claims>::from_base64(raw).unwrap();
+        let token = Token::<Header, Claims>::parse(raw).unwrap();
 
         {
             assert_eq!(token.header.alg, Some(HS256));
@@ -191,7 +191,7 @@ mod tests {
         let token: Token<Header, Claims> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
-        let same = Token::from_base64(&*raw).unwrap();
+        let same = Token::parse(&*raw).unwrap();
 
         assert_eq!(token, same);
         assert!(same.verify(key, Sha256::new()));
