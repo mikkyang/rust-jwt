@@ -29,9 +29,10 @@ pub mod header;
 pub mod claims;
 
 #[derive(Debug, Default)]
-pub struct Token {
+pub struct Token<H>
+    where H: Component {
     raw: Option<String>,
-    pub header: Header,
+    pub header: H,
     pub claims: Claims,
 }
 
@@ -60,22 +61,23 @@ impl<T> Component for T
     }
 }
 
-impl Token {
-    pub fn new(header: Header, claims: Claims) -> Token {
+impl<H> Token<H>
+    where H: Component {
+    pub fn new(header: H, claims: Claims) -> Token<H> {
         Token {
+            raw: None,
             header: header,
             claims: claims,
-            ..Default::default()
         }
     }
 
     /// Parse a token from a string.
-    pub fn parse(raw: &str) -> Result<Token, Error> {
+    pub fn parse(raw: &str) -> Result<Token<H>, Error> {
         let pieces: Vec<_> = raw.split('.').collect();
 
         Ok(Token {
             raw: Some(raw.into()),
-            header: try!(Header::parse(pieces[0])),
+            header: try!(Component::parse(pieces[0])),
             claims: try!(Claims::parse(pieces[1])),
         })
     }
@@ -106,8 +108,9 @@ impl Token {
     }
 }
 
-impl PartialEq for Token {
-    fn eq(&self, other: &Token) -> bool {
+impl<H> PartialEq for Token<H>
+    where H: Component + PartialEq {
+    fn eq(&self, other: &Token<H>) -> bool {
         self.header == other.header &&
         self.claims == other.claims
     }
@@ -148,6 +151,7 @@ mod tests {
     use verify;
     use Token;
     use header::Algorithm::HS256;
+    use header::Header;
     use crypto::sha2::Sha256;
 
     #[test]
@@ -175,7 +179,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::parse(raw).unwrap();
+        let token = Token::<Header>::parse(raw).unwrap();
 
         {
             assert_eq!(token.header.alg, Some(HS256));
@@ -185,7 +189,7 @@ mod tests {
 
     #[test]
     pub fn roundtrip() {
-        let token: Token = Default::default();
+        let token: Token<Header> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
