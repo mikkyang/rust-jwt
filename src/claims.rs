@@ -91,6 +91,7 @@ impl Component for Claims {
 mod tests {
     use std::default::Default;
     use claims::Claims;
+    use Component;
 
     #[test]
     fn from_base64() {
