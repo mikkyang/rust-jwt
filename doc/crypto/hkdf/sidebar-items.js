@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["hkdf_expand","Execute the HKDF-Expand function.  Applications MUST NOT use this for password hashing."],["hkdf_extract","Execute the HKDF-Extract function.  Applications MUST NOT use this for password hashing."]]});

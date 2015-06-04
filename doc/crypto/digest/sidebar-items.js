@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["Digest","The Digest trait specifies an interface common to digest functions, such as SHA-1 and the SHA-2 family of digest functions."]]});

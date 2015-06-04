@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Ghash","A structure representing the state of a GHASH computation"],["GhashWithC","A structure representing the state of a GHASH computation, after input for C was provided"]]});
