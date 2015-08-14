@@ -157,7 +157,7 @@ mod tests {
         let token = Token::<Header, Claims>::parse(raw).unwrap();
 
         {
-            assert_eq!(token.header.alg, Some(HS256));
+            assert_eq!(token.header.alg, HS256);
         }
         assert!(token.verify("secret".as_bytes(), Sha256::new()));
     }
