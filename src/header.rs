@@ -3,8 +3,9 @@ use error::Error;
 
 #[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub struct Header {
-    pub typ: HeaderType,
-    pub alg: Option<Algorithm>,
+    pub typ: Option<HeaderType>,
+    pub kid: Option<String>,
+    pub alg: Algorithm,
 }
 
 
@@ -15,14 +16,15 @@ pub enum HeaderType {
 
 #[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub enum Algorithm {
-    HS256,
+    HS256, RS256,
 }
 
 impl Default for Header {
     fn default() -> Header {
         Header {
-            typ: HeaderType::JWT,
-            alg: Some(Algorithm::HS256),
+            typ: Some(HeaderType::JWT),
+            kid: None,
+            alg: Algorithm::HS256,
         }
     }
 }
@@ -41,8 +43,15 @@ mod tests {
         let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
         let header = Header::from_base64(enc).unwrap();
 
-        assert_eq!(header.typ, HeaderType::JWT);
-        assert_eq!(header.alg.unwrap(), Algorithm::HS256);
+        assert_eq!(header.typ.unwrap(), HeaderType::JWT);
+        assert_eq!(header.alg, Algorithm::HS256);
+
+
+        let enc = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFLU0YzZyJ9";
+        let header = Header::from_base64(enc).unwrap();
+
+        assert_eq!(header.kid.unwrap(), "1KSF3g".to_string());
+        assert_eq!(header.alg, Algorithm::RS256);
     }
 
     #[test]
