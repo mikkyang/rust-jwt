@@ -32,7 +32,7 @@ pub struct Token<H, C>
     pub claims: C,
 }
 
-pub trait Component {
+pub trait Component: Sized {
     fn from_base64(raw: &str) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
 }
