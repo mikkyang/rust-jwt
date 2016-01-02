@@ -11,5 +11,5 @@ keywords = ["JWT", "token", "web"]
 license = "MIT"
 
 [dependencies]
-rust-crypto = "*"
-rustc-serialize = "*"
+rust-crypto = "0.2"
+rustc-serialize = "0.3"
