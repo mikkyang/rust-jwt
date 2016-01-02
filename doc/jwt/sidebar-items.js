@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Component",""]],"mod":[["claims",""],["error",""],["header",""]],"struct":[["Token",""]]});
+initSidebarItems({"mod":[["claims",""],["error",""],["header",""]],"struct":[["Token",""]],"trait":[["Component",""]]});

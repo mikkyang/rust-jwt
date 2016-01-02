@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Header",""]],"enum":[["Algorithm",""],["HeaderType",""]]});
+initSidebarItems({"enum":[["Algorithm",""],["HeaderType",""]],"struct":[["Header",""]]});
