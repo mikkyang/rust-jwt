@@ -1,22 +1,10 @@
 # JWT
 
+[![crates.io](http://meritbadge.herokuapp.com/jwt)](https://crates.io/crates/jwt)
+
 A JSON Web Token library.
 
 [Documentation](http://mikkyang.github.io/rust-jwt/doc/jwt/index.html)
-
-## Installation
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-jwt = "0.3.0"
-```
-
-and this to your crate root:
-```rust
-extern crate jwt;
-```
 
 ## Usage
 
