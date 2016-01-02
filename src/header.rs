@@ -1,5 +1,4 @@
 use std::default::Default;
-use error::Error;
 
 #[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub struct Header {
