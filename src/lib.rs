@@ -100,6 +100,16 @@ impl<H, C> Token<H, C>
         let sig = crypt::sign(&*data, key, digest);
         Ok(format!("{}.{}", data, sig))
     }
+
+	/// Generate the signed token from an rsa key.
+    pub fn sign_rsa(&self, key: &[u8]) -> Result<String, Error> {
+        let header = try!(Component::to_base64(&self.header));
+        let claims = try!(self.claims.to_base64());
+        let data = format!("{}.{}", header, claims);
+
+		let sig = crypt::sign_rsa(&*data, key);
+        Ok(format!("{}.{}", data, sig))
+    }
 }
 
 impl<H, C> PartialEq for Token<H, C>

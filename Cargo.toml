@@ -13,3 +13,4 @@ license = "MIT"
 [dependencies]
 rust-crypto = "0.2"
 rustc-serialize = "0.3"
+openssl = "0.8"
