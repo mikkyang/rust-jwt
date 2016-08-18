@@ -10,6 +10,9 @@ use crypto::sha2::Sha256;
 use rustc_serialize::base64::{
     FromBase64,
     ToBase64,
+	Config,
+	CharacterSet,
+	Newline,
 };
 use self::openssl::crypto::rsa;
 use self::openssl::crypto::hash;
@@ -32,7 +35,13 @@ pub fn sign_rsa(data: &str, key: &[u8]) -> String {
 	let mut data = vec![0u8; data_bytes];
 	let mut data = &mut data[..];
 	hasher.result(&mut data);
-	(private_key.sign(hash::Type::SHA256, data).unwrap()).to_base64(BASE_CONFIG)
+	// (private_key.sign(hash::Type::SHA256, data).unwrap()).to_base64(BASE_CONFIG)
+	(private_key.sign(hash::Type::SHA256, data).unwrap()).to_base64(Config{
+		char_set:		CharacterSet::UrlSafe,
+		newline: 		Newline::LF,
+		pad:			true,
+		line_length:	None,
+	})
 }
 
 pub fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
