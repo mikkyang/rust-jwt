@@ -6,6 +6,7 @@ use crypto::mac::{
     Mac,
     MacResult,
 };
+use crypto::sha2::Sha256;
 use rustc_serialize::base64::{
     FromBase64,
     ToBase64,
@@ -25,7 +26,9 @@ pub fn sign<D: Digest>(data: &str, key: &[u8], digest: D) -> String {
 
 pub fn sign_rsa(data: &str, key: &[u8]) -> String {
 	let private_key = rsa::RSA::private_key_from_pem(key).unwrap();
-	(private_key.sign(hash::Type::SHA256, data.as_bytes()).unwrap()).to_base64(BASE_CONFIG)
+	let mut hasher = Sha256::new();
+	hasher.input_str(data);
+	(private_key.sign(hash::Type::SHA256, hasher.result_str().as_bytes()).unwrap()).to_base64(BASE_CONFIG)
 }
 
 pub fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
