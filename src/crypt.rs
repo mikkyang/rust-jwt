@@ -28,7 +28,11 @@ pub fn sign_rsa(data: &str, key: &[u8]) -> String {
 	let private_key = rsa::RSA::private_key_from_pem(key).unwrap();
 	let mut hasher = Sha256::new();
 	hasher.input_str(data);
-	(private_key.sign(hash::Type::SHA256, hasher.result_str().as_bytes()).unwrap()).to_base64(BASE_CONFIG)
+	let data_bytes = hasher.output_bytes();
+	let mut data = vec![0u8; data_bytes];
+	let mut data = &mut data[..];
+	hasher.result(&mut data);
+	(private_key.sign(hash::Type::SHA256, data).unwrap()).to_base64(BASE_CONFIG)
 }
 
 pub fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
