@@ -2,7 +2,7 @@ extern crate crypto;
 extern crate rustc_serialize;
 extern crate openssl;
 
-use crypto::sha2::Sha256;
+use crypto::sha2::{Sha256, Sha384, Sha512};
 use crypto::digest::Digest;
 use openssl::hash::MessageDigest;
 use rustc_serialize::{
@@ -87,8 +87,12 @@ impl<H, C> Token<H, C>
     /// Verify a from_base64d token with a key and the token's specific algorithm
     pub fn verify(&self, key: &[u8]) -> bool {
         match self.header.alg() {
-            &header::Algorithm::HS256 => self.verify_hmac(key, Sha256::new()),
-            &header::Algorithm::RS256 => self.verify_rsa(key, MessageDigest::sha256()),
+            &Algorithm::HS256 => self.verify_hmac(key, Sha256::new()),
+            &Algorithm::HS384 => self.verify_hmac(key, Sha384::new()),
+            &Algorithm::HS512 => self.verify_hmac(key, Sha512::new()),
+            &Algorithm::RS256 => self.verify_rsa(key, MessageDigest::sha256()),
+            &Algorithm::RS384 => self.verify_rsa(key, MessageDigest::sha384()),
+            &Algorithm::RS512 => self.verify_rsa(key, MessageDigest::sha512()),
         }
     }
 
@@ -121,8 +125,12 @@ impl<H, C> Token<H, C>
     /// Generate the signed token from a key and the specific algorithm
     pub fn signed(&self, key: &[u8]) -> Result<String, Error> {
         match self.header.alg() {
-            &header::Algorithm::HS256 => self.signed_hmac(key, Sha256::new()),
-            &header::Algorithm::RS256 => self.signed_rsa(key, MessageDigest::sha256()),
+            &Algorithm::HS256 => self.signed_hmac(key, Sha256::new()),
+            &Algorithm::HS384 => self.signed_hmac(key, Sha384::new()),
+            &Algorithm::HS512 => self.signed_hmac(key, Sha512::new()),
+            &Algorithm::RS256 => self.signed_rsa(key, MessageDigest::sha256()),
+            &Algorithm::RS384 => self.signed_rsa(key, MessageDigest::sha384()),
+            &Algorithm::RS512 => self.signed_rsa(key, MessageDigest::sha512()),
         }
     }
 
@@ -170,7 +178,7 @@ mod tests {
     };
     use Claims;
     use Token;
-    use header::Algorithm::{HS256,RS256};
+    use header::Algorithm::{HS256,RS512};
     use header::DefaultHeader;
     use std::io::{Error, Read};
     use std::fs::File;
@@ -250,7 +258,7 @@ mod tests {
     pub fn roundtrip_rsa() {
         let token: Token<DefaultHeader, Claims> = Token {
             header: DefaultHeader {
-                alg: RS256,
+                alg: RS512,
                 ..Default::default()
             },
             ..Default::default()

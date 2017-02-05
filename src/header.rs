@@ -16,7 +16,12 @@ pub enum HeaderType {
 
 #[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
 pub enum Algorithm {
-    HS256, RS256,
+    HS256,
+    HS384,
+    HS512,
+    RS256,
+    RS384,
+    RS512
 }
 
 impl Default for DefaultHeader {
