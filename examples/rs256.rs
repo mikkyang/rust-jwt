@@ -2,11 +2,21 @@ extern crate crypto;
 extern crate jwt;
 
 use std::default::Default;
+use std::fs::File;
+use std::io::{Error, Read};
 use jwt::{
+    Algorithm,
     DefaultHeader,
     Registered,
     Token,
 };
+
+fn load_key(keypath: &str) -> Result<String, Error> {
+    let mut key_file = try!(File::open(keypath));
+    let mut key = String::new();
+    try!(key_file.read_to_string(&mut key));
+    Ok(key)
+}
 
 fn new_token(user_id: &str, password: &str) -> Option<String> {
     // Dummy auth
@@ -14,7 +24,10 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
         return None
     }
 
-    let header: DefaultHeader = Default::default();
+    let header: DefaultHeader = DefaultHeader {
+        alg: Algorithm::RS256,
+        ..Default::default()
+    };
     let claims = Registered {
         iss: Some("mikkyang.com".into()),
         sub: Some(user_id.into()),
@@ -22,13 +35,13 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
     };
     let token = Token::new(header, claims);
 
-    token.signed(b"secret_key").ok()
+    token.signed(load_key("./privateKey.pem").unwrap().as_bytes()).ok()
 }
 
 fn login(token: &str) -> Option<String> {
     let token = Token::<DefaultHeader, Registered>::parse(token).unwrap();
 
-    if token.verify(b"secret_key") {
+    if token.verify(load_key("./publicKey.pub").unwrap().as_bytes()) {
         token.claims.sub
     } else {
         None

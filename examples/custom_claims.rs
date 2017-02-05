@@ -3,9 +3,8 @@ extern crate jwt;
 extern crate rustc_serialize;
 
 use std::default::Default;
-use crypto::sha2::Sha256;
 use jwt::{
-    Header,
+    DefaultHeader,
     Token,
 };
 
@@ -21,7 +20,7 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
         return None
     }
 
-    let header: Header = Default::default();
+    let header: DefaultHeader = Default::default();
     let claims = Custom {
         sub: user_id.into(),
         rhino: true,
@@ -29,13 +28,13 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
     };
     let token = Token::new(header, claims);
 
-    token.signed(b"secret_key", Sha256::new()).ok()
+    token.signed(b"secret_key").ok()
 }
 
 fn login(token: &str) -> Option<String> {
-    let token = Token::<Header, Custom>::parse(token).unwrap();
+    let token = Token::<DefaultHeader, Custom>::parse(token).unwrap();
 
-    if token.verify(b"secret_key", Sha256::new()) {
+    if token.verify(b"secret_key") {
         Some(token.claims.sub)
     } else {
         None
