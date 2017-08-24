@@ -1,19 +1,15 @@
+extern crate base64;
 extern crate crypto;
-extern crate rustc_serialize;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 use crypto::digest::Digest;
-use rustc_serialize::{
-    json,
-    Decodable,
-    Encodable,
-};
-use rustc_serialize::base64::{
-    self,
-    CharacterSet,
-    FromBase64,
-    Newline,
-    ToBase64,
-};
+
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+
 pub use error::Error;
 pub use header::Header;
 pub use claims::Claims;
@@ -26,7 +22,10 @@ mod crypt;
 
 #[derive(Debug, Default)]
 pub struct Token<H, C>
-    where H: Component, C: Component {
+where
+    H: Component,
+    C: Component,
+{
     raw: Option<String>,
     pub header: H,
     pub claims: C,
@@ -38,25 +37,29 @@ pub trait Component: Sized {
 }
 
 impl<T> Component for T
-    where T: Encodable + Decodable + Sized {
-
+where
+    T: Serialize + DeserializeOwned + Sized,
+{
     /// Parse from a string.
     fn from_base64(raw: &str) -> Result<T, Error> {
-        let data = try!(raw.from_base64());
+        let data = try!(base64::decode_config(raw, base64::URL_SAFE_NO_PAD));
         let s = try!(String::from_utf8(data));
-        Ok(try!(json::decode(&*s)))
+        Ok(try!(serde_json::from_str(&*s)))
     }
 
     /// Encode to a string.
     fn to_base64(&self) -> Result<String, Error> {
-        let s = try!(json::encode(&self));
-        let enc = (&*s).as_bytes().to_base64(BASE_CONFIG);
+        let s = try!(serde_json::to_string(&self));
+        let enc = base64::encode_config((&*s).as_bytes(), base64::URL_SAFE_NO_PAD);
         Ok(enc)
     }
 }
 
 impl<H, C> Token<H, C>
-    where H: Component, C: Component {
+where
+    H: Component,
+    C: Component,
+{
     pub fn new(header: H, claims: C) -> Token<H, C> {
         Token {
             raw: None,
@@ -103,26 +106,18 @@ impl<H, C> Token<H, C>
 }
 
 impl<H, C> PartialEq for Token<H, C>
-    where H: Component + PartialEq, C: Component + PartialEq{
+where
+    H: Component + PartialEq,
+    C: Component + PartialEq,
+{
     fn eq(&self, other: &Token<H, C>) -> bool {
-        self.header == other.header &&
-        self.claims == other.claims
+        self.header == other.header && self.claims == other.claims
     }
 }
 
-const BASE_CONFIG: base64::Config = base64::Config {
-    char_set: CharacterSet::Standard,
-    newline: Newline::LF,
-    pad: false,
-    line_length: None,
-};
-
 #[cfg(test)]
 mod tests {
-    use crypt::{
-        sign,
-        verify,
-    };
+    use crypt::{sign, verify};
     use Claims;
     use Token;
     use header::Algorithm::HS256;

@@ -1,17 +1,10 @@
 use std::collections::BTreeMap;
-use rustc_serialize::Decodable;
-use rustc_serialize::base64::{
-    FromBase64,
-    ToBase64,
-};
-use rustc_serialize::json::{
-    self,
-    Decoder,
-    Json,
-};
+use base64;
+use serde_json;
+use serde_json::Value as Json;
+
 use Component;
 use error::Error;
-use BASE_CONFIG;
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Claims {
@@ -19,7 +12,7 @@ pub struct Claims {
     pub private: BTreeMap<String, Json>,
 }
 
-#[derive(Debug, Default, PartialEq, RustcDecodable, RustcEncodable)]
+#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Registered {
     pub iss: Option<String>,
     pub sub: Option<String>,
@@ -44,28 +37,21 @@ impl Claims {
 
 impl Component for Claims {
     fn from_base64(raw: &str) -> Result<Claims, Error> {
-        let data = try!(raw.from_base64());
+        let data = try!(base64::decode_config(raw, base64::URL_SAFE_NO_PAD));
         let s = try!(String::from_utf8(data));
-        let tree = match try!(Json::from_str(&*s)) {
+        let tree = match try!(serde_json::from_str(&*s)) {
             Json::Object(x) => x,
             _ => return Err(Error::Format),
         };
 
-        const FIELDS: [&'static str; 7] = [
-            "iss", "sub", "aud",
-            "exp", "nbf", "iat",
-            "jti",
-        ];
+        const FIELDS: [&'static str; 7] = ["iss", "sub", "aud", "exp", "nbf", "iat", "jti"];
 
-        let (reg, pri): (BTreeMap<_, _>, BTreeMap<_, _>) = tree.into_iter()
-            .partition(|&(ref key, _)| {
-                FIELDS.iter().any(|f| f == key)
-            });
+        let (_, pri): (BTreeMap<_, _>, BTreeMap<_, _>) = tree.into_iter()
+            .partition(|&(ref key, _)| FIELDS.iter().any(|f| f == key));
 
-        let mut decoder = Decoder::new(Json::Object(reg));
-        let reg_claims: Registered = try!(Decodable::decode(&mut decoder));
+        let reg_claims: Registered = try!(serde_json::from_str(&*s));
 
-        Ok(Claims{
+        Ok(Claims {
             reg: reg_claims,
             private: pri,
         })
@@ -73,16 +59,16 @@ impl Component for Claims {
 
     fn to_base64(&self) -> Result<String, Error> {
         // Extremely inefficient
-        let s = try!(json::encode(&self.reg));
-        let mut tree = match try!(Json::from_str(&*s)) {
+        let s = try!(serde_json::to_string(&self.reg));
+        let mut tree = match try!(serde_json::from_str(&*s)) {
             Json::Object(x) => x,
             _ => return Err(Error::Format),
         };
 
         tree.extend(self.private.clone());
 
-        let s = try!(json::encode(&tree));
-        let enc = (&*s).as_bytes().to_base64(BASE_CONFIG);
+        let s = try!(serde_json::to_string(&tree));
+        let enc = base64::encode_config(&*s, base64::URL_SAFE_NO_PAD);
         Ok(enc)
     }
 }

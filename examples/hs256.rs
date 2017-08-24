@@ -3,16 +3,12 @@ extern crate jwt;
 
 use std::default::Default;
 use crypto::sha2::Sha256;
-use jwt::{
-    Header,
-    Registered,
-    Token,
-};
+use jwt::{Header, Registered, Token};
 
 fn new_token(user_id: &str, password: &str) -> Option<String> {
     // Dummy auth
     if password != "password" {
-        return None
+        return None;
     }
 
     let header: Header = Default::default();

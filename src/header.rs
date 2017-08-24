@@ -1,6 +1,6 @@
 use std::default::Default;
 
-#[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Header {
     pub typ: Option<HeaderType>,
     pub kid: Option<String>,
@@ -8,14 +8,15 @@ pub struct Header {
 }
 
 
-#[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeaderType {
     JWT,
 }
 
-#[derive(Debug, PartialEq, RustcDecodable, RustcEncodable)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Algorithm {
-    HS256, RS256,
+    HS256,
+    RS256,
 }
 
 impl Default for Header {
@@ -31,11 +32,7 @@ impl Default for Header {
 #[cfg(test)]
 mod tests {
     use Component;
-    use header::{
-        Algorithm,
-        Header,
-        HeaderType,
-    };
+    use header::{Algorithm, Header, HeaderType};
 
     #[test]
     fn from_base64() {
