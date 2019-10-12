@@ -1,11 +1,12 @@
-extern crate crypto;
 extern crate jwt;
 #[macro_use]
 extern crate serde_derive;
+extern crate sha2;
 
 use std::default::Default;
-use crypto::sha2::Sha256;
 use jwt::{Header, Token};
+use sha2::Digest;
+use sha2::Sha256;
 
 #[derive(Default, Deserialize, Serialize)]
 struct Custom {
