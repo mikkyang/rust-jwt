@@ -37,9 +37,9 @@ impl Claims {
 
 impl Component for Claims {
     fn from_base64(raw: &str) -> Result<Claims, Error> {
-        let data = try!(base64::decode_config(raw, base64::URL_SAFE_NO_PAD));
-        let s = try!(String::from_utf8(data));
-        let tree = match try!(serde_json::from_str(&*s)) {
+        let data = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        let s = String::from_utf8(data)?;
+        let tree = match serde_json::from_str(&*s)? {
             Json::Object(x) => x,
             _ => return Err(Error::Format),
         };
@@ -49,7 +49,7 @@ impl Component for Claims {
         let (_, pri): (BTreeMap<_, _>, BTreeMap<_, _>) = tree.into_iter()
             .partition(|&(ref key, _)| FIELDS.iter().any(|f| f == key));
 
-        let reg_claims: Registered = try!(serde_json::from_str(&*s));
+        let reg_claims: Registered = serde_json::from_str(&*s)?;
 
         Ok(Claims {
             reg: reg_claims,
@@ -59,15 +59,15 @@ impl Component for Claims {
 
     fn to_base64(&self) -> Result<String, Error> {
         // Extremely inefficient
-        let s = try!(serde_json::to_string(&self.reg));
-        let mut tree = match try!(serde_json::from_str(&*s)) {
+        let s = serde_json::to_string(&self.reg)?;
+        let mut tree = match serde_json::from_str(&*s)? {
             Json::Object(x) => x,
             _ => return Err(Error::Format),
         };
 
         tree.extend(self.private.clone());
 
-        let s = try!(serde_json::to_string(&tree));
+        let s = serde_json::to_string(&tree)?;
         let enc = base64::encode_config(&*s, base64::URL_SAFE_NO_PAD);
         Ok(enc)
     }
