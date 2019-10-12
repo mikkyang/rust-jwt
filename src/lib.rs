@@ -42,14 +42,14 @@ where
 {
     /// Parse from a string.
     fn from_base64(raw: &str) -> Result<T, Error> {
-        let data = try!(base64::decode_config(raw, base64::URL_SAFE_NO_PAD));
-        let s = try!(String::from_utf8(data));
-        Ok(try!(serde_json::from_str(&*s)))
+        let data = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        let s = String::from_utf8(data)?;
+        Ok(serde_json::from_str(&*s)?)
     }
 
     /// Encode to a string.
     fn to_base64(&self) -> Result<String, Error> {
-        let s = try!(serde_json::to_string(&self));
+        let s = serde_json::to_string(&self)?;
         let enc = base64::encode_config((&*s).as_bytes(), base64::URL_SAFE_NO_PAD);
         Ok(enc)
     }
@@ -74,8 +74,8 @@ where
 
         Ok(Token {
             raw: Some(raw.into()),
-            header: try!(Component::from_base64(pieces[0])),
-            claims: try!(Component::from_base64(pieces[1])),
+            header: Component::from_base64(pieces[0])?,
+            claims: Component::from_base64(pieces[1])?,
         })
     }
 
@@ -96,8 +96,8 @@ where
 
     /// Generate the signed token from a key and a given hashing algorithm.
     pub fn signed<D: Digest>(&self, key: &[u8], digest: D) -> Result<String, Error> {
-        let header = try!(Component::to_base64(&self.header));
-        let claims = try!(self.claims.to_base64());
+        let header = Component::to_base64(&self.header)?;
+        let claims = self.claims.to_base64()?;
         let data = format!("{}.{}", header, claims);
 
         let sig = crypt::sign(&*data, key, digest);
