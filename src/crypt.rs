@@ -1,14 +1,8 @@
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
-use crypto::mac::{
-    Mac,
-    MacResult,
-};
-use rustc_serialize::base64::{
-    FromBase64,
-    ToBase64,
-};
-use BASE_CONFIG;
+use crypto::mac::{Mac, MacResult};
+use base64;
+
 
 pub fn sign<D: Digest>(data: &str, key: &[u8], digest: D) -> String {
     let mut hmac = Hmac::new(digest, key);
@@ -16,11 +10,11 @@ pub fn sign<D: Digest>(data: &str, key: &[u8], digest: D) -> String {
 
     let mac = hmac.result();
     let code = mac.code();
-    (*code).to_base64(BASE_CONFIG)
+    base64::encode_config(code, base64::URL_SAFE_NO_PAD)
 }
 
 pub fn verify<D: Digest>(target: &str, data: &str, key: &[u8], digest: D) -> bool {
-    let target_bytes = match target.from_base64() {
+    let target_bytes = match base64::decode_config(target, base64::URL_SAFE_NO_PAD) {
         Ok(x) => x,
         Err(_) => return false,
     };

@@ -1,15 +1,13 @@
 extern crate crypto;
 extern crate jwt;
-extern crate rustc_serialize;
+#[macro_use]
+extern crate serde_derive;
 
 use std::default::Default;
 use crypto::sha2::Sha256;
-use jwt::{
-    Header,
-    Token,
-};
+use jwt::{Header, Token};
 
-#[derive(Default, RustcDecodable, RustcEncodable)]
+#[derive(Default, Deserialize, Serialize)]
 struct Custom {
     sub: String,
     rhino: bool,
@@ -18,7 +16,7 @@ struct Custom {
 fn new_token(user_id: &str, password: &str) -> Option<String> {
     // Dummy auth
     if password != "password" {
-        return None
+        return None;
     }
 
     let header: Header = Default::default();
