@@ -14,10 +14,10 @@ use serde::de::DeserializeOwned;
 use digest::generic_array::ArrayLength;
 use digest::*;
 
-pub use error::Error;
-pub use header::Header;
-pub use claims::Claims;
-pub use claims::Registered;
+pub use crate::error::Error;
+pub use crate::header::Header;
+pub use crate::claims::Claims;
+pub use crate::claims::Registered;
 
 pub mod error;
 pub mod header;
@@ -131,12 +131,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crypt::{sign, verify};
-    use Claims;
-    use Token;
+    use crate::crypt::{sign, verify};
+    use crate::Claims;
+    use crate::Token;
     use digest::Digest;
-    use header::Algorithm::HS256;
-    use header::Header;
+    use crate::header::Algorithm::HS256;
+    use crate::header::Header;
     use sha2::Sha256;
 
     #[test]

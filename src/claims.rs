@@ -35,8 +35,8 @@ impl Claims {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use claims::Claims;
-    use Component;
+    use crate::claims::Claims;
+    use crate::Component;
     use serde_json::Value;
 
     // {"iss":"mikkyang.com","exp":1302319100,"custom_claim":true}

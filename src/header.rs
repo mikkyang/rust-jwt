@@ -31,8 +31,8 @@ impl Default for Header {
 
 #[cfg(test)]
 mod tests {
-    use Component;
-    use header::{Algorithm, Header, HeaderType};
+    use crate::Component;
+    use crate::header::{Algorithm, Header, HeaderType};
 
     #[test]
     fn from_base64() {
