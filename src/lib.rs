@@ -38,7 +38,7 @@ where
 const SEPARATOR: char = '.';
 
 pub trait Component: Sized {
-    fn from_base64(raw: &str) -> Result<Self, Error>;
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
 }
 
@@ -47,7 +47,7 @@ where
     T: Serialize + DeserializeOwned + Sized,
 {
     /// Parse from a string.
-    fn from_base64(raw: &str) -> Result<T, Error> {
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
         let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
         Ok(serde_json::from_slice(&json_bytes)?)
     }
