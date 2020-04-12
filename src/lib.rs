@@ -48,16 +48,15 @@ where
 {
     /// Parse from a string.
     fn from_base64(raw: &str) -> Result<T, Error> {
-        let data = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
-        let s = String::from_utf8(data)?;
-        Ok(serde_json::from_str(&*s)?)
+        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        Ok(serde_json::from_slice(&json_bytes)?)
     }
 
     /// Encode to a string.
     fn to_base64(&self) -> Result<String, Error> {
-        let s = serde_json::to_string(&self)?;
-        let enc = base64::encode_config((&*s).as_bytes(), base64::URL_SAFE_NO_PAD);
-        Ok(enc)
+        let json_bytes = serde_json::to_vec(&self)?;
+        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
+        Ok(encoded_json_bytes)
     }
 }
 
