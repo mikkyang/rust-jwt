@@ -78,29 +78,20 @@ mod tests {
     use Component;
     use serde_json::Value;
 
+    // {"iss":"mikkyang.com","exp":1302319100,"custom_claim":true}
+    const ENCODED_PAYLOAD: &'static str = "eyJpc3MiOiJtaWtreWFuZy5jb20iLCJleHAiOjEzMDIzMTkxMDAsImN1c3RvbV9jbGFpbSI6dHJ1ZX0K";
 
     #[test]
-    fn from_base64() {
-        let enc = "ew0KICAiaXNzIjogIm1pa2t5YW5nLmNvbSIsDQogICJleHAiOiAxMzAyMzE5MTAwLA0KICAibmFtZSI6ICJNaWNoYWVsIFlhbmciLA0KICAiYWRtaW4iOiB0cnVlDQp9";
-        let claims = Claims::from_base64(enc).unwrap();
+    fn registered_claims() {
+        let claims = Claims::from_base64(ENCODED_PAYLOAD).unwrap();
 
         assert_eq!(claims.reg.iss.unwrap(), "mikkyang.com");
         assert_eq!(claims.reg.exp.unwrap(), 1302319100);
     }
 
     #[test]
-    fn multiple_types() {
-        let enc = "ew0KICAiaXNzIjogIm1pa2t5YW5nLmNvbSIsDQogICJleHAiOiAxMzAyMzE5MTAwLA0KICAibmFtZSI6ICJNaWNoYWVsIFlhbmciLA0KICAiYWRtaW4iOiB0cnVlDQp9";
-        let claims = Registered::from_base64(enc).unwrap();
-
-        assert_eq!(claims.iss.unwrap(), "mikkyang.com");
-        assert_eq!(claims.exp.unwrap(), 1302319100);
-    }
-
-    #[test]
-    fn private_claim() {
-        let encoded = "ewogICJpc3MiOiAibWlra3lhbmcuY29tIiwKICAiZXhwIjogMTMwMjMxOTEwMCwKICAiY3VzdG9tX2NsYWltIjogdHJ1ZQp9Cg==";
-        let claims = Claims::from_base64(encoded).unwrap();
+    fn private_claims() {
+        let claims = Claims::from_base64(ENCODED_PAYLOAD).unwrap();
 
         assert_eq!(claims.private["custom_claim"], Value::Bool(true));
     }
