@@ -58,16 +58,14 @@ impl Component for Claims {
     }
 
     fn to_base64(&self) -> Result<String, Error> {
-        // Extremely inefficient
-        let s = serde_json::to_string(&self.reg)?;
-        let mut tree = match serde_json::from_str(&*s)? {
+        let mut json_claims = match serde_json::to_value(&self.reg)? {
             Json::Object(x) => x,
             _ => return Err(Error::Format),
         };
 
-        tree.extend(self.private.clone());
+        json_claims.extend(self.private.clone());
 
-        let s = serde_json::to_string(&tree)?;
+        let s = serde_json::to_string(&json_claims)?;
         let enc = base64::encode_config(&*s, base64::URL_SAFE_NO_PAD);
         Ok(enc)
     }
