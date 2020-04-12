@@ -1,10 +1,10 @@
 extern crate base64;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
 extern crate crypto_mac;
 extern crate digest;
 extern crate hmac;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
 
