@@ -1,14 +1,18 @@
 extern crate base64;
-extern crate crypto;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate crypto_mac;
+extern crate digest;
+extern crate hmac;
 extern crate serde_json;
-
-use crypto::digest::Digest;
+extern crate sha2;
 
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+
+use digest::generic_array::ArrayLength;
+use digest::*;
 
 pub use error::Error;
 pub use header::Header;
@@ -81,7 +85,12 @@ where
 
     /// Verify a from_base64d token with a key and a given hashing algorithm.
     /// Make sure to check the token's algorithm before applying.
-    pub fn verify<D: Digest>(&self, key: &[u8], digest: D) -> bool {
+    pub fn verify<D>(&self, key: &[u8], digest: D) -> bool
+    where
+        D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+        D::BlockSize: ArrayLength<u8>,
+        D::OutputSize: ArrayLength<u8>,
+    {
         let raw = match self.raw {
             Some(ref s) => s,
             None => return false,
@@ -95,7 +104,12 @@ where
     }
 
     /// Generate the signed token from a key and a given hashing algorithm.
-    pub fn signed<D: Digest>(&self, key: &[u8], digest: D) -> Result<String, Error> {
+    pub fn signed<D>(&self, key: &[u8], digest: D) -> Result<String, Error>
+    where
+        D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+        D::BlockSize: ArrayLength<u8>,
+        D::OutputSize: ArrayLength<u8>,
+    {
         let header = Component::to_base64(&self.header)?;
         let claims = self.claims.to_base64()?;
         let data = format!("{}.{}", header, claims);
@@ -120,9 +134,10 @@ mod tests {
     use crypt::{sign, verify};
     use Claims;
     use Token;
+    use digest::Digest;
     use header::Algorithm::HS256;
     use header::Header;
-    use crypto::sha2::Sha256;
+    use sha2::Sha256;
 
     #[test]
     pub fn sign_data() {
