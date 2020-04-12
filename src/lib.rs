@@ -35,6 +35,8 @@ where
     pub claims: C,
 }
 
+const SEPARATOR: char = '.';
+
 pub trait Component: Sized {
     fn from_base64(raw: &str) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
@@ -74,7 +76,7 @@ where
 
     /// Parse a token from a string.
     pub fn parse(raw: &str) -> Result<Token<H, C>, Error> {
-        let pieces: Vec<_> = raw.split('.').collect();
+        let pieces: Vec<_> = raw.split(SEPARATOR).collect();
 
         Ok(Token {
             raw: Some(raw.into()),
@@ -96,7 +98,7 @@ where
             None => return false,
         };
 
-        let pieces: Vec<_> = raw.rsplitn(2, '.').collect();
+        let pieces: Vec<_> = raw.rsplitn(2, SEPARATOR).collect();
         let sig = pieces[0];
         let data = pieces[1];
 
