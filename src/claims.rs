@@ -76,6 +76,8 @@ mod tests {
     use std::default::Default;
     use claims::{Claims, Registered};
     use Component;
+    use serde_json::Value;
+
 
     #[test]
     fn from_base64() {
@@ -93,6 +95,14 @@ mod tests {
 
         assert_eq!(claims.iss.unwrap(), "mikkyang.com");
         assert_eq!(claims.exp.unwrap(), 1302319100);
+    }
+
+    #[test]
+    fn private_claim() {
+        let encoded = "ewogICJpc3MiOiAibWlra3lhbmcuY29tIiwKICAiZXhwIjogMTMwMjMxOTEwMCwKICAiY3VzdG9tX2NsYWltIjogdHJ1ZQp9Cg==";
+        let claims = Claims::from_base64(encoded).unwrap();
+
+        assert_eq!(claims.private["custom_claim"], Value::Bool(true));
     }
 
     #[test]
