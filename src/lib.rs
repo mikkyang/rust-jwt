@@ -35,7 +35,7 @@ where
     pub claims: C,
 }
 
-const SEPARATOR: char = '.';
+const SEPARATOR: &'static str = ".";
 
 pub trait Component: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
@@ -120,12 +120,18 @@ where
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
-        let header = self.header.to_base64()?;
-        let claims = self.claims.to_base64()?;
-        let data = format!("{}.{}", header, claims);
+        let data = [
+            self.header.to_base64()?,
+            self.claims.to_base64()?,
+        ].join(SEPARATOR);
 
-        let sig = crypt::sign(&*data, key, digest);
-        Ok(format!("{}.{}", data, sig))
+        let signature = crypt::sign(&*data, key, digest);
+        let signed_token = [
+            data,
+            signature,
+        ].join(SEPARATOR);
+
+        Ok(signed_token)
     }
 }
 
