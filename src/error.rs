@@ -1,9 +1,7 @@
+use std::fmt;
 use std::string::FromUtf8Error;
 use base64::DecodeError;
 use serde_json::Error as JsonError;
-
-use std::error::Error as StdError;
-use std::fmt;
 
 #[derive(Debug)]
 pub enum Error {
@@ -20,17 +18,6 @@ impl fmt::Display for Error {
             Error::Base64(ref x) => write!(f, "{}", x),
             Error::Json(ref x) => write!(f, "{}", x),
             Error::Utf8(ref x) => write!(f, "{}", x),
-        }
-    }
-}
-
-impl StdError for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Format => "invalid formatting",
-            Error::Base64(ref x) => x.description(),
-            Error::Json(ref x) => x.description(),
-            Error::Utf8(ref x) => x.description(),
         }
     }
 }

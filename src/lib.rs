@@ -1,10 +1,10 @@
 extern crate base64;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
 extern crate crypto_mac;
 extern crate digest;
 extern crate hmac;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
 
@@ -14,10 +14,10 @@ use serde::de::DeserializeOwned;
 use digest::generic_array::ArrayLength;
 use digest::*;
 
-pub use error::Error;
-pub use header::Header;
-pub use claims::Claims;
-pub use claims::Registered;
+pub use crate::error::Error;
+pub use crate::header::Header;
+pub use crate::claims::Claims;
+pub use crate::claims::Registered;
 
 pub mod error;
 pub mod header;
@@ -35,8 +35,10 @@ where
     pub claims: C,
 }
 
+const SEPARATOR: &'static str = ".";
+
 pub trait Component: Sized {
-    fn from_base64(raw: &str) -> Result<Self, Error>;
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
 }
 
@@ -45,17 +47,16 @@ where
     T: Serialize + DeserializeOwned + Sized,
 {
     /// Parse from a string.
-    fn from_base64(raw: &str) -> Result<T, Error> {
-        let data = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
-        let s = String::from_utf8(data)?;
-        Ok(serde_json::from_str(&*s)?)
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
+        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        Ok(serde_json::from_slice(&json_bytes)?)
     }
 
     /// Encode to a string.
     fn to_base64(&self) -> Result<String, Error> {
-        let s = serde_json::to_string(&self)?;
-        let enc = base64::encode_config((&*s).as_bytes(), base64::URL_SAFE_NO_PAD);
-        Ok(enc)
+        let json_bytes = serde_json::to_vec(&self)?;
+        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
+        Ok(encoded_json_bytes)
     }
 }
 
@@ -74,12 +75,19 @@ where
 
     /// Parse a token from a string.
     pub fn parse(raw: &str) -> Result<Token<H, C>, Error> {
-        let pieces: Vec<_> = raw.split('.').collect();
+        let components: Vec<_> = raw.split(SEPARATOR).collect();
+        let (header, claims) = match &*components {
+            [header, claims, _signature] => (
+                Component::from_base64(header)?,
+                Component::from_base64(claims)?,
+            ),
+            _ => return Err(Error::Format),
+        };
 
         Ok(Token {
             raw: Some(raw.into()),
-            header: Component::from_base64(pieces[0])?,
-            claims: Component::from_base64(pieces[1])?,
+            header,
+            claims,
         })
     }
 
@@ -96,11 +104,13 @@ where
             None => return false,
         };
 
-        let pieces: Vec<_> = raw.rsplitn(2, '.').collect();
-        let sig = pieces[0];
-        let data = pieces[1];
+        let components: Vec<_> = raw.rsplitn(2, SEPARATOR).collect();
+        let (signature, payload) = match &*components {
+            [s, p] => (s, p),
+            _ => return false,
+        };
 
-        crypt::verify(sig, data, key, digest)
+        crypt::verify(signature, payload, key, digest)
     }
 
     /// Generate the signed token from a key and a given hashing algorithm.
@@ -110,12 +120,18 @@ where
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
-        let header = Component::to_base64(&self.header)?;
-        let claims = self.claims.to_base64()?;
-        let data = format!("{}.{}", header, claims);
+        let data = [
+            self.header.to_base64()?,
+            self.claims.to_base64()?,
+        ].join(SEPARATOR);
 
-        let sig = crypt::sign(&*data, key, digest);
-        Ok(format!("{}.{}", data, sig))
+        let signature = crypt::sign(&*data, key, digest);
+        let signed_token = [
+            data,
+            signature,
+        ].join(SEPARATOR);
+
+        Ok(signed_token)
     }
 }
 
@@ -131,12 +147,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crypt::{sign, verify};
-    use Claims;
-    use Token;
+    use crate::crypt::{sign, verify};
+    use crate::Claims;
+    use crate::Token;
     use digest::Digest;
-    use header::Algorithm::HS256;
-    use header::Header;
+    use crate::header::Algorithm::HS256;
+    use crate::header::Header;
     use sha2::Sha256;
 
     #[test]
