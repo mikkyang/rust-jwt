@@ -75,12 +75,19 @@ where
 
     /// Parse a token from a string.
     pub fn parse(raw: &str) -> Result<Token<H, C>, Error> {
-        let pieces: Vec<_> = raw.split(SEPARATOR).collect();
+        let components: Vec<_> = raw.split(SEPARATOR).collect();
+        let (header, claims) = match &*components {
+            [header, claims, _signature] => (
+                Component::from_base64(header)?,
+                Component::from_base64(claims)?,
+            ),
+            _ => return Err(Error::Format),
+        };
 
         Ok(Token {
             raw: Some(raw.into()),
-            header: Component::from_base64(pieces[0])?,
-            claims: Component::from_base64(pieces[1])?,
+            header,
+            claims,
         })
     }
 
@@ -97,11 +104,13 @@ where
             None => return false,
         };
 
-        let pieces: Vec<_> = raw.rsplitn(2, SEPARATOR).collect();
-        let sig = pieces[0];
-        let data = pieces[1];
+        let components: Vec<_> = raw.rsplitn(2, SEPARATOR).collect();
+        let (signature, payload) = match &*components {
+            [s, p] => (s, p),
+            _ => return false,
+        };
 
-        crypt::verify(sig, data, key, digest)
+        crypt::verify(signature, payload, key, digest)
     }
 
     /// Generate the signed token from a key and a given hashing algorithm.
