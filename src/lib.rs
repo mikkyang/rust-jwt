@@ -120,7 +120,7 @@ where
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
-        let header = Component::to_base64(&self.header)?;
+        let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
         let data = format!("{}.{}", header, claims);
 
