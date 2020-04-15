@@ -49,6 +49,8 @@ impl fmt::Display for Error {
     }
 }
 
+impl std::error::Error for Error {}
+
 macro_rules! error_wrap {
     ($f: ty, $e: expr) => {
         impl From<$f> for Error {
