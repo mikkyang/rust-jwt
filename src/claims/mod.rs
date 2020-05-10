@@ -13,7 +13,7 @@ pub struct ClaimsV2 {
     pub private: BTreeMap<String, serde_json::Value>,
 }
 
-pub type Time = u64;
+pub type SecondsSinceEpoch = u64;
 
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct RegisteredClaims {
@@ -27,13 +27,13 @@ pub struct RegisteredClaims {
     pub audience: Option<String>,
 
     #[serde(rename="exp", skip_serializing_if = "Option::is_none")]
-    pub expiration: Option<Time>,
+    pub expiration: Option<SecondsSinceEpoch>,
 
     #[serde(rename="nbf", skip_serializing_if = "Option::is_none")]
-    pub not_before: Option<Time>,
+    pub not_before: Option<SecondsSinceEpoch>,
 
     #[serde(rename="nbf", skip_serializing_if = "Option::is_none")]
-    pub issued_at: Option<Time>,
+    pub issued_at: Option<SecondsSinceEpoch>,
 
     #[serde(rename="jti", skip_serializing_if = "Option::is_none")]
     pub json_web_token_id: Option<String>,
