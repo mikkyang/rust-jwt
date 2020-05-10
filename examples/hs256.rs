@@ -1,7 +1,7 @@
 extern crate jwt;
 extern crate sha2;
 
-use jwt::{Header, Registered, Token};
+use jwt::{HeaderV2 as Header, Registered, Token};
 use sha2::Digest;
 use sha2::Sha256;
 use std::default::Default;
