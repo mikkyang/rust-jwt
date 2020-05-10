@@ -153,8 +153,8 @@ mod tests {
     use crate::Claims;
     use crate::Token;
     use digest::Digest;
-    use crate::header::Algorithm::HS256;
-    use crate::header::Header;
+    use crate::algorithm::AlgorithmType::Hs256;
+    use crate::header::HeaderV2;
     use sha2::Sha256;
 
     #[test]
@@ -182,17 +182,17 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<Header, Claims>::parse(raw).unwrap();
+        let token = Token::<HeaderV2, Claims>::parse(raw).unwrap();
 
         {
-            assert_eq!(token.header.alg, HS256);
+            assert_eq!(token.header.algorithm, Hs256);
         }
         assert!(token.verify("secret".as_bytes(), Sha256::new()));
     }
 
     #[test]
     pub fn roundtrip() {
-        let token: Token<Header, Claims> = Default::default();
+        let token: Token<HeaderV2, Claims> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
