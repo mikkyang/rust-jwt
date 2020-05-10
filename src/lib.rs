@@ -150,7 +150,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::crypt::{sign, verify};
-    use crate::Claims;
+    use crate::claims::ClaimsV2;
     use crate::Token;
     use digest::Digest;
     use crate::algorithm::AlgorithmType::Hs256;
@@ -182,7 +182,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<HeaderV2, Claims>::parse(raw).unwrap();
+        let token = Token::<HeaderV2, ClaimsV2>::parse(raw).unwrap();
 
         {
             assert_eq!(token.header.algorithm, Hs256);
@@ -192,7 +192,7 @@ mod tests {
 
     #[test]
     pub fn roundtrip() {
-        let token: Token<HeaderV2, Claims> = Default::default();
+        let token: Token<HeaderV2, ClaimsV2> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
