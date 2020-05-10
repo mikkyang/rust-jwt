@@ -13,6 +13,15 @@ pub struct ClaimsV2 {
     pub private: BTreeMap<String, serde_json::Value>,
 }
 
+impl ClaimsV2 {
+    pub fn new(registered: RegisteredClaims) -> Self {
+        ClaimsV2 {
+            registered,
+            private: BTreeMap::new(),
+        }
+    }
+}
+
 pub type SecondsSinceEpoch = u64;
 
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
