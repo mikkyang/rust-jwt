@@ -19,6 +19,7 @@ pub use crate::header::Header;
 pub use crate::claims::Claims;
 pub use crate::claims::Registered;
 
+pub mod algorithm;
 pub mod error;
 pub mod header;
 pub mod claims;

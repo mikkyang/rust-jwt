@@ -13,6 +13,7 @@ pub enum HeaderType {
     JWT,
 }
 
+#[deprecated(note = "Please use algorithm::AlgorithmType instead")]
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Algorithm {
     HS256,
