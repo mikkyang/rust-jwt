@@ -1,6 +1,6 @@
 use std::default::Default;
 
-#[deprecated(note = "Please use header::HeaderV2 instead")]
+#[deprecated(note = "Please use HeaderV2 instead")]
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Header {
     pub typ: Option<HeaderType>,
@@ -9,7 +9,7 @@ pub struct Header {
 }
 
 
-#[deprecated(note = "Please use header::Type instead")]
+#[deprecated(note = "Please use header::HeaderType instead")]
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeaderType {
     JWT,

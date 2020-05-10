@@ -16,6 +16,7 @@ use digest::*;
 
 pub use crate::error::Error;
 pub use crate::header::Header;
+pub use crate::header::HeaderV2;
 pub use crate::claims::Claims;
 pub use crate::claims::Registered;
 
