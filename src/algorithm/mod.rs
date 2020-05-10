@@ -16,3 +16,9 @@ pub enum AlgorithmType {
     #[serde(rename="none")]
     None,
 }
+
+impl Default for AlgorithmType {
+    fn default() -> Self {
+        AlgorithmType::Hs256
+    }
+}
