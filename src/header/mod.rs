@@ -1,5 +1,6 @@
 use crate::algorithm::AlgorithmType;
 
+#[allow(deprecated)]
 pub mod legacy;
 
 pub use self::legacy::*;
