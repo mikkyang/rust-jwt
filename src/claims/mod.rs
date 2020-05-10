@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use serde_json;
 
+#[allow(deprecated)]
 pub mod legacy;
 
 pub use self::legacy::*;

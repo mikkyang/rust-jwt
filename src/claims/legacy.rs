@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use serde_json::Value as Json;
 
+#[deprecated(note = "Please use ClaimsV2 instead")]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     #[serde(flatten)]
@@ -9,6 +10,7 @@ pub struct Claims {
     pub private: BTreeMap<String, Json>,
 }
 
+#[deprecated(note = "Please use RegisteredClaims instead")]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Registered {
     pub iss: Option<String>,
