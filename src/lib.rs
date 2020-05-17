@@ -12,6 +12,7 @@ extern crate sha2;
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::convert::TryFrom;
 
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
@@ -79,20 +80,7 @@ where
     H: Component,
     C: Component,
 {
-    let [header_str, claims_str, signature_str] = split_components(token_str)?;
-    let header = Component::from_base64(header_str)?;
-    let claims = Component::from_base64(claims_str)?;
-    let signature = Unverified {
-        header_str,
-        claims_str,
-        signature_str,
-    };
-
-    Ok(Token {
-        header,
-        claims,
-        signature,
-    })
+    TryFrom::try_from(token_str)
 }
 
 pub fn parse_and_verify_with_key<H, C>(
