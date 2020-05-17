@@ -57,7 +57,7 @@ mod tests {
     use openssl::pkey::PKey;
 
     #[test]
-    fn read() {
+    fn sign() {
         let pem = include_bytes!("../../test/private_rsa.pem");
 
         let algorithm = PKeyWithDigest {

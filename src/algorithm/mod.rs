@@ -34,6 +34,7 @@ pub trait SigningAlgorithm {
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error>;
 }
+
 pub trait VerifyingAlgorithm {
     fn algorithm_type(&self) -> AlgorithmType;
 
