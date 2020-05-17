@@ -1,5 +1,7 @@
 use crate::error::Error;
 
+pub mod rust_crypto;
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AlgorithmType {
