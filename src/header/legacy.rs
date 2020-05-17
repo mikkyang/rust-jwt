@@ -8,7 +8,6 @@ pub struct Header {
     pub alg: Algorithm,
 }
 
-
 #[deprecated(note = "Please use header::HeaderType instead")]
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeaderType {
@@ -34,8 +33,8 @@ impl Default for Header {
 
 #[cfg(test)]
 mod tests {
+    use crate::header::legacy::{Algorithm, Header, HeaderType};
     use crate::Component;
-    use crate::header::{Algorithm, Header, HeaderType};
 
     #[test]
     fn from_base64() {
@@ -44,7 +43,6 @@ mod tests {
 
         assert_eq!(header.typ.unwrap(), HeaderType::JWT);
         assert_eq!(header.alg, Algorithm::HS256);
-
 
         let enc = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFLU0YzZyJ9";
         let header = Header::from_base64(enc).unwrap();

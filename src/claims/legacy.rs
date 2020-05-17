@@ -1,5 +1,5 @@
-use std::collections::BTreeMap;
 use serde_json::Value as Json;
+use std::collections::BTreeMap;
 
 #[deprecated(note = "Please use ClaimsV2 instead")]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -36,13 +36,14 @@ impl Claims {
 
 #[cfg(test)]
 mod tests {
-    use std::default::Default;
     use crate::claims::Claims;
     use crate::Component;
     use serde_json::Value;
+    use std::default::Default;
 
     // {"iss":"mikkyang.com","exp":1302319100,"custom_claim":true}
-    const ENCODED_PAYLOAD: &'static str = "eyJpc3MiOiJtaWtreWFuZy5jb20iLCJleHAiOjEzMDIzMTkxMDAsImN1c3RvbV9jbGFpbSI6dHJ1ZX0K";
+    const ENCODED_PAYLOAD: &'static str =
+        "eyJpc3MiOiJtaWtreWFuZy5jb20iLCJleHAiOjEzMDIzMTkxMDAsImN1c3RvbV9jbGFpbSI6dHJ1ZX0K";
 
     #[test]
     fn registered_claims() {

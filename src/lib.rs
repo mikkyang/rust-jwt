@@ -8,25 +8,24 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
 
-use serde::Serialize;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 
 use digest::generic_array::ArrayLength;
 use digest::*;
 
-pub use crate::error::Error;
-pub use crate::header::Header;
-pub use crate::header::HeaderV2;
 pub use crate::claims::Claims;
 pub use crate::claims::ClaimsV2;
 pub use crate::claims::Registered;
 pub use crate::claims::RegisteredClaims;
+pub use crate::error::Error;
+pub use crate::header::Header;
 
 pub mod algorithm;
-pub mod error;
-pub mod header;
 pub mod claims;
 mod crypt;
+pub mod error;
+pub mod header;
 
 #[derive(Debug, Default)]
 pub struct Token<H, C>
@@ -124,16 +123,10 @@ where
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
-        let data = [
-            self.header.to_base64()?,
-            self.claims.to_base64()?,
-        ].join(SEPARATOR);
+        let data = [self.header.to_base64()?, self.claims.to_base64()?].join(SEPARATOR);
 
         let signature = crypt::sign(&*data, key, digest);
-        let signed_token = [
-            data,
-            signature,
-        ].join(SEPARATOR);
+        let signed_token = [data, signature].join(SEPARATOR);
 
         Ok(signed_token)
     }
@@ -151,12 +144,12 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::algorithm::AlgorithmType::Hs256;
     use crate::crypt::{sign, verify};
     use crate::claims::ClaimsV2;
+    use crate::header::Header;
     use crate::Token;
     use digest::Digest;
-    use crate::algorithm::AlgorithmType::Hs256;
-    use crate::header::HeaderV2;
     use sha2::Sha256;
 
     #[test]
@@ -184,7 +177,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<HeaderV2, ClaimsV2>::parse(raw).unwrap();
+        let token = Token::<Header, ClaimsV2>::parse(raw).unwrap();
 
         {
             assert_eq!(token.header.algorithm, Hs256);
@@ -194,7 +187,7 @@ mod tests {
 
     #[test]
     pub fn roundtrip() {
-        let token: Token<HeaderV2, ClaimsV2> = Default::default();
+        let token: Token<Header, ClaimsV2> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
