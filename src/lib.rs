@@ -15,7 +15,7 @@ use digest::generic_array::ArrayLength;
 use digest::*;
 
 pub use crate::claims::Claims;
-pub use crate::claims::Registered;
+pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
 
@@ -143,9 +143,9 @@ where
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
+    use crate::claims::Claims;
     use crate::crypt::{sign, verify};
     use crate::header::Header;
-    use crate::Claims;
     use crate::Token;
     use digest::Digest;
     use sha2::Sha256;

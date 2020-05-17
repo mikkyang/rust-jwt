@@ -1,6 +1,7 @@
 use serde_json::Value as Json;
 use std::collections::BTreeMap;
 
+#[deprecated(note = "Please use ClaimsV2 instead")]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     #[serde(flatten)]
@@ -9,6 +10,7 @@ pub struct Claims {
     pub private: BTreeMap<String, Json>,
 }
 
+#[deprecated(note = "Please use RegisteredClaims instead")]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Registered {
     pub iss: Option<String>,
@@ -34,7 +36,7 @@ impl Claims {
 
 #[cfg(test)]
 mod tests {
-    use crate::claims::Claims;
+    use crate::claims::legacy::Claims;
     use crate::Component;
     use serde_json::Value;
     use std::default::Default;

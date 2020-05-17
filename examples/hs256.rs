@@ -1,7 +1,7 @@
 extern crate jwt;
 extern crate sha2;
 
-use jwt::{Header, Registered, Token};
+use jwt::{Header, RegisteredClaims, Token};
 use sha2::Digest;
 use sha2::Sha256;
 use std::default::Default;
@@ -13,9 +13,9 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
     }
 
     let header: Header = Default::default();
-    let claims = Registered {
-        iss: Some("mikkyang.com".into()),
-        sub: Some(user_id.into()),
+    let claims = RegisteredClaims {
+        issuer: Some("mikkyang.com".into()),
+        subject: Some(user_id.into()),
         ..Default::default()
     };
     let token = Token::new(header, claims);
@@ -24,10 +24,10 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
 }
 
 fn login(token: &str) -> Option<String> {
-    let token = Token::<Header, Registered>::parse(token).unwrap();
+    let token = Token::<Header, RegisteredClaims>::parse(token).unwrap();
 
     if token.verify(b"secret_key", Sha256::new()) {
-        token.claims.sub
+        token.claims.subject
     } else {
         None
     }
