@@ -27,6 +27,7 @@ pub mod algorithm;
 pub mod claims;
 pub mod error;
 pub mod header;
+pub mod token;
 
 #[derive(Debug, Default)]
 pub struct Token<H, C>
