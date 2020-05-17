@@ -25,7 +25,6 @@ pub use crate::header::Header;
 
 pub mod algorithm;
 pub mod claims;
-mod crypt;
 pub mod error;
 pub mod header;
 
@@ -177,33 +176,10 @@ fn split_components(token: &str) -> Result<[&str; 3], Error> {
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
     use crate::claims::Claims;
-    use crate::crypt::{sign, verify};
     use crate::header::Header;
     use crate::Token;
     use digest::Digest;
     use sha2::Sha256;
-
-    #[test]
-    pub fn sign_data() {
-        let header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
-        let real_sig = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let data = format!("{}.{}", header, claims);
-
-        let sig = sign(&*data, "secret".as_bytes(), Sha256::new());
-
-        assert_eq!(sig, real_sig);
-    }
-
-    #[test]
-    pub fn verify_data() {
-        let header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
-        let target = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let data = format!("{}.{}", header, claims);
-
-        assert!(verify(target, &*data, "secret".as_bytes(), Sha256::new()));
-    }
 
     #[test]
     pub fn raw_data() {

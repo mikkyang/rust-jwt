@@ -78,3 +78,33 @@ where
     hmac.input(claims.as_bytes());
     hmac
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
+    use crypto_mac::Mac;
+    use hmac::Hmac;
+    use sha2::Sha256;
+
+    #[test]
+    pub fn sign() {
+        let header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
+        let expected_signature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+
+        let signer: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        let computed_signature = SigningAlgorithm::sign(&signer, &header, &claims).unwrap();
+
+        assert_eq!(computed_signature, expected_signature);
+    }
+
+    #[test]
+    pub fn verify() {
+        let header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
+        let signature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+
+        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        assert!(VerifyingAlgorithm::verify(&verifier, &header, &claims, &signature).unwrap());
+    }
+}
