@@ -95,16 +95,16 @@ where
     })
 }
 
-pub fn parse_and_verify_with_algorithm<H, C>(
+pub fn parse_and_verify_with_key<H, C>(
     token_str: &str,
-    algorithm: &dyn VerifyingAlgorithm,
+    key: &dyn VerifyingAlgorithm,
 ) -> Result<Token<H, C, Verified>, Error>
 where
     H: Component,
     C: Component,
 {
     let unverifed = parse_unverified(token_str)?;
-    unverifed.verify_with_algorithm(algorithm)
+    unverifed.verify_with_key(key)
 }
 
 fn split_components(token: &str) -> Result<[&str; 3], Error> {
@@ -135,20 +135,20 @@ mod tests {
         assert_eq!(token.header.algorithm, Hs256);
 
         let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
-        assert!(token.verify_with_algorithm(&verifier).is_ok());
+        assert!(token.verify_with_key(&verifier).is_ok());
     }
 
     #[test]
     pub fn roundtrip() {
         let token: Token<Header, Claims, _> = Default::default();
         let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
-        let signed_token = token.sign_with_algorithm(&key).unwrap();
+        let signed_token = token.sign_with_key(&key).unwrap();
         let signed_token_str = signed_token.as_str();
 
         let recreated_token: Token<Header, Claims, _> = parse_unverified(signed_token_str).unwrap();
 
         assert_eq!(signed_token.header(), recreated_token.header());
         assert_eq!(signed_token.claims(), recreated_token.claims());
-        assert!(recreated_token.verify_with_algorithm(&key).is_ok());
+        assert!(recreated_token.verify_with_key(&key).is_ok());
     }
 }

@@ -5,7 +5,7 @@ extern crate serde_derive;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{parse_and_verify_with_algorithm, Header, Token};
+use jwt::{parse_and_verify_with_key, Header, Token};
 use sha2::Sha256;
 use std::default::Default;
 
@@ -32,7 +32,7 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
     let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
 
     let signed_token = unsigned_token
-        .sign_with_algorithm(&key)
+        .sign_with_key(&key)
         .map_err(|_e| "Sign error")?;
     Ok(signed_token.into())
 }
@@ -41,7 +41,7 @@ fn login(token: &str) -> Result<String, &'static str> {
     let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
 
     let token: Token<Header, Custom, _> =
-        parse_and_verify_with_algorithm(token, &key).map_err(|_e| "Verification failed")?;
+        parse_and_verify_with_key(token, &key).map_err(|_e| "Verification failed")?;
 
     let (_, claims) = token.into();
     Ok(claims.sub)
