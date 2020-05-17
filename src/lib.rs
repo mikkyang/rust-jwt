@@ -44,6 +44,14 @@ impl<H, C, S> Token<H, C, S> {
     pub fn claims(&self) -> &C {
         &self.claims
     }
+
+    pub fn remove_signature(self) -> Token<H, C, Unsigned> {
+        Token {
+            header: self.header,
+            claims: self.claims,
+            signature: Unsigned,
+        }
+    }
 }
 
 impl<H, C, S> Into<(H, C)> for Token<H, C, S> {

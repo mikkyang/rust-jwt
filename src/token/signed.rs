@@ -57,14 +57,6 @@ where
     pub fn as_str(&self) -> &str {
         &self.signature.token_string
     }
-
-    pub fn remove_signature(self) -> Token<H, C, Unsigned> {
-        Token {
-            header: self.header,
-            claims: self.claims,
-            signature: Unsigned,
-        }
-    }
 }
 
 impl<H, C> Into<String> for Token<H, C, Signed> {
