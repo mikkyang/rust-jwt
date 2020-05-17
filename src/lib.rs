@@ -97,7 +97,7 @@ where
 
     /// Verify a from_base64d token with a key and a given hashing algorithm.
     /// Make sure to check the token's algorithm before applying.
-    pub fn verify<D>(&self, key: &[u8], digest: D) -> bool
+    pub fn verify<D>(&self, key: &[u8], _digest: D) -> bool
     where
         D: Input
             + BlockInput
