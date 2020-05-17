@@ -15,8 +15,6 @@ use digest::generic_array::ArrayLength;
 use digest::*;
 
 pub use crate::claims::Claims;
-pub use crate::claims::ClaimsV2;
-pub use crate::claims::Registered;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
@@ -146,7 +144,7 @@ where
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
     use crate::crypt::{sign, verify};
-    use crate::claims::ClaimsV2;
+    use crate::claims::Claims;
     use crate::header::Header;
     use crate::Token;
     use digest::Digest;
@@ -177,7 +175,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<Header, ClaimsV2>::parse(raw).unwrap();
+        let token = Token::<Header, Claims>::parse(raw).unwrap();
 
         {
             assert_eq!(token.header.algorithm, Hs256);
@@ -187,7 +185,7 @@ mod tests {
 
     #[test]
     pub fn roundtrip() {
-        let token: Token<Header, ClaimsV2> = Default::default();
+        let token: Token<Header, Claims> = Default::default();
         let key = "secret".as_bytes();
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();

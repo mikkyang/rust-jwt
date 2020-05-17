@@ -4,19 +4,17 @@ use serde_json;
 #[allow(deprecated)]
 pub mod legacy;
 
-pub use self::legacy::*;
-
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct ClaimsV2 {
+pub struct Claims {
     #[serde(flatten)]
     pub registered: RegisteredClaims,
     #[serde(flatten)]
     pub private: BTreeMap<String, serde_json::Value>,
 }
 
-impl ClaimsV2 {
+impl Claims {
     pub fn new(registered: RegisteredClaims) -> Self {
-        ClaimsV2 {
+        Claims {
             registered,
             private: BTreeMap::new(),
         }
@@ -52,7 +50,7 @@ pub struct RegisteredClaims {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use crate::claims::ClaimsV2;
+    use crate::claims::Claims;
     use crate::Component;
     use serde_json::Value;
 
@@ -61,7 +59,7 @@ mod tests {
 
     #[test]
     fn registered_claims() {
-        let claims = ClaimsV2::from_base64(ENCODED_PAYLOAD).unwrap();
+        let claims = Claims::from_base64(ENCODED_PAYLOAD).unwrap();
 
         assert_eq!(claims.registered.issuer.unwrap(), "mikkyang.com");
         assert_eq!(claims.registered.expiration.unwrap(), 1302319100);
@@ -69,17 +67,17 @@ mod tests {
 
     #[test]
     fn private_claims() {
-        let claims = ClaimsV2::from_base64(ENCODED_PAYLOAD).unwrap();
+        let claims = Claims::from_base64(ENCODED_PAYLOAD).unwrap();
 
         assert_eq!(claims.private["custom_claim"], Value::Bool(true));
     }
 
     #[test]
     fn roundtrip() {
-        let mut claims: ClaimsV2 = Default::default();
+        let mut claims: Claims = Default::default();
         claims.registered.issuer = Some("mikkyang.com".into());
         claims.registered.expiration = Some(1302319100);
         let enc = claims.to_base64().unwrap();
-        assert_eq!(claims, ClaimsV2::from_base64(&*enc).unwrap());
+        assert_eq!(claims, Claims::from_base64(&*enc).unwrap());
     }
 }
