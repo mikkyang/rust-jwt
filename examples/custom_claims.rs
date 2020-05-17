@@ -4,7 +4,7 @@ extern crate serde_derive;
 extern crate sha2;
 
 use std::default::Default;
-use jwt::{HeaderV2 as Header, Token};
+use jwt::{Header, Token};
 use sha2::Digest;
 use sha2::Sha256;
 
