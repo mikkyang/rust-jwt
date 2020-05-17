@@ -51,11 +51,7 @@ where
     }
 }
 
-impl<H, C> Token<H, C, Signed>
-where
-    H: Component,
-    C: Component,
-{
+impl<H, C> Token<H, C, Signed> {
     pub fn as_str(&self) -> &str {
         &self.signature.token_string
     }
