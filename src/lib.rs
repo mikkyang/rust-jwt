@@ -13,10 +13,6 @@ extern crate sha2;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use digest::generic_array::ArrayLength;
-use digest::*;
-use hmac::{Hmac, Mac};
-
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
