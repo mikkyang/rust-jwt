@@ -143,8 +143,8 @@ where
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
-    use crate::crypt::{sign, verify};
     use crate::claims::Claims;
+    use crate::crypt::{sign, verify};
     use crate::header::Header;
     use crate::Token;
     use digest::Digest;
