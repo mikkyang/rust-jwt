@@ -15,7 +15,9 @@ use serde::Serialize;
 
 use digest::generic_array::ArrayLength;
 use digest::*;
+use hmac::{Hmac, Mac};
 
+pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
@@ -108,22 +110,22 @@ where
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
-        let raw = match self.raw {
-            Some(ref s) => s,
-            None => return false,
-        };
-
-        let components: Vec<_> = raw.rsplitn(2, SEPARATOR).collect();
-        let (signature, payload) = match &*components {
-            [s, p] => (s, p),
-            _ => return false,
-        };
-
-        crypt::verify(signature, payload, key, digest)
+        self.raw
+            .as_ref()
+            .ok_or(Error::Format)
+            .and_then(|token| split_components(&*token))
+            .and_then(|[header, claims, signature]| {
+                // This will panic for bad key sizes. Returning an error
+                // would probably be better, but for now, I want to keep the
+                // API as stable as possible
+                let hmac = Hmac::<D>::new_varkey(key).unwrap();
+                VerifyingAlgorithm::verify(&hmac, &header, &claims, &signature)
+            })
+            .unwrap_or(false)
     }
 
     /// Generate the signed token from a key and a given hashing algorithm.
-    pub fn signed<D>(&self, key: &[u8], digest: D) -> Result<String, Error>
+    pub fn signed<D>(&self, key: &[u8], _digest: D) -> Result<String, Error>
     where
         D: Input
             + BlockInput
@@ -137,7 +139,15 @@ where
     {
         let data = [self.header.to_base64()?, self.claims.to_base64()?].join(SEPARATOR);
 
-        let signature = crypt::sign(&*data, key, digest);
+        // This will panic for bad key sizes. Returning an error
+        // would probably be better, but for now, I want to keep the
+        // API as stable as possible
+        let hmac = Hmac::<D>::new_varkey(key).unwrap();
+        let mut components = data.split(SEPARATOR);
+        let header = components.next().unwrap();
+        let claims = components.next().unwrap();
+        let signature = SigningAlgorithm::sign(&hmac, header, claims).unwrap();
+
         let signed_token = [data, signature].join(SEPARATOR);
 
         Ok(signed_token)
@@ -152,6 +162,15 @@ where
     fn eq(&self, other: &Token<H, C>) -> bool {
         self.header == other.header && self.claims == other.claims
     }
+}
+
+fn split_components(token: &str) -> Result<[&str; 3], Error> {
+    let mut components = token.split(SEPARATOR);
+    let header = components.next().ok_or(Error::Format)?;
+    let claims = components.next().ok_or(Error::Format)?;
+    let signature = components.next().ok_or(Error::Format)?;
+
+    Ok([header, claims, signature])
 }
 
 #[cfg(test)]
