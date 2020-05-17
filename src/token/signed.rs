@@ -10,7 +10,7 @@ pub type UnsignedToken<H, C> = Token<H, C, Unsigned>;
 /// be removed.
 pub type SignedToken<H, C> = Token<H, C, Signed>;
 
-impl<H, C> Default for UnsignedToken<H, C> 
+impl<H, C> Default for UnsignedToken<H, C>
 where
     H: Default + Component,
     C: Default + Component,
