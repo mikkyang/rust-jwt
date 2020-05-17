@@ -22,6 +22,7 @@ pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
+pub use crate::signature::{Unverified, Verified};
 
 pub mod algorithm;
 pub mod claims;
@@ -36,6 +37,22 @@ pub struct Token<H, C, S> {
     header: H,
     claims: C,
     signature: S,
+}
+
+impl<H, C, S> Token<H, C, S> {
+    pub fn header(&self) -> &H {
+        &self.header
+    }
+
+    pub fn claims(&self) -> &C {
+        &self.claims
+    }
+}
+
+impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
+    fn into(self) -> (H, C) {
+        (self.header, self.claims)
+    }
 }
 
 pub trait Component: Sized {
@@ -61,6 +78,39 @@ where
     }
 }
 
+pub fn parse_unverified<H, C>(token_str: &str) -> Result<Token<H, C, Unverified>, Error>
+where
+    H: Component,
+    C: Component,
+{
+    let [header_str, claims_str, signature_str] = split_components(token_str)?;
+    let header = Component::from_base64(header_str)?;
+    let claims = Component::from_base64(claims_str)?;
+    let signature = Unverified {
+        header_str,
+        claims_str,
+        signature_str,
+    };
+
+    Ok(Token {
+        header,
+        claims,
+        signature,
+    })
+}
+
+pub fn parse_and_verify_with_algorithm<H, C>(
+    token_str: &str,
+    algorithm: &dyn VerifyingAlgorithm,
+) -> Result<Token<H, C, Verified>, Error>
+where
+    H: Component,
+    C: Component,
+{
+    let unverifed = parse_unverified(token_str)?;
+    unverifed.verify_with_algorithm(algorithm)
+}
+
 fn split_components(token: &str) -> Result<[&str; 3], Error> {
     let mut components = token.split(SEPARATOR);
     let header = components.next().ok_or(Error::Format)?;
@@ -68,4 +118,41 @@ fn split_components(token: &str) -> Result<[&str; 3], Error> {
     let signature = components.next().ok_or(Error::Format)?;
 
     Ok([header, claims, signature])
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::algorithm::AlgorithmType::Hs256;
+    use crate::header::Header;
+    use crate::parse_unverified;
+    use crate::Claims;
+    use crate::Token;
+    use hmac::Hmac;
+    use hmac::Mac;
+    use sha2::Sha256;
+
+    #[test]
+    pub fn raw_data() {
+        let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+        let token: Token<Header, Claims, _> = parse_unverified(raw).unwrap();
+
+        assert_eq!(token.header.algorithm, Hs256);
+
+        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        assert!(token.verify_with_algorithm(&verifier).is_ok());
+    }
+
+    #[test]
+    pub fn roundtrip() {
+        let token: Token<Header, Claims, _> = Default::default();
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        let signed_token = token.sign_with_algorithm(&key).unwrap();
+        let signed_token_str = signed_token.as_str();
+
+        let recreated_token: Token<Header, Claims, _> = parse_unverified(signed_token_str).unwrap();
+
+        assert_eq!(signed_token.header(), recreated_token.header());
+        assert_eq!(signed_token.claims(), recreated_token.claims());
+        assert!(recreated_token.verify_with_algorithm(&key).is_ok());
+    }
 }
