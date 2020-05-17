@@ -31,6 +31,12 @@ pub mod token;
 
 const SEPARATOR: &'static str = ".";
 
+pub struct Token<H, C, S> {
+    header: H,
+    claims: C,
+    signature: S,
+}
+
 pub trait Component: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
