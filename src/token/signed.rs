@@ -5,19 +5,15 @@ use crate::{Component, Token, SEPARATOR};
 
 impl<H, C> Default for Token<H, C, Unsigned>
 where
-    H: Default + Component,
-    C: Default + Component,
+    H: Default,
+    C: Default,
 {
     fn default() -> Self {
         Token::new(H::default(), C::default())
     }
 }
 
-impl<'a, H, C> Token<H, C, Unsigned>
-where
-    H: Component,
-    C: Component,
-{
+impl<H, C> Token<H, C, Unsigned> {
     pub fn new(header: H, claims: C) -> Self {
         Token {
             header,
@@ -33,7 +29,13 @@ where
     pub fn claims_mut(&mut self) -> &mut C {
         &mut self.claims
     }
+}
 
+impl<H, C> Token<H, C, Unsigned>
+where
+    H: Component,
+    C: Component,
+{
     pub fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
         let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
@@ -49,7 +51,7 @@ where
     }
 }
 
-impl<'a, H, C> Token<H, C, Signed>
+impl<H, C> Token<H, C, Signed>
 where
     H: Component,
     C: Component,

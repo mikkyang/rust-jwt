@@ -4,11 +4,7 @@ use crate::signature::{Unverified, Verified};
 use crate::{split_components, Component, Token};
 use std::convert::TryFrom;
 
-impl<'a, H, C> Token<H, C, Unverified<'a>>
-where
-    H: Component,
-    C: Component,
-{
+impl<'a, H, C> Token<H, C, Unverified<'a>> {
     pub fn verify_with_key(
         self,
         key: &dyn VerifyingAlgorithm,
