@@ -1,5 +1,7 @@
 use crate::error::Error;
 
+#[cfg(feature = "openssl")]
+pub mod openssl;
 pub mod rust_crypto;
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]

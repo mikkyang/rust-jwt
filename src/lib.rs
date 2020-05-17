@@ -2,6 +2,8 @@ extern crate base64;
 extern crate crypto_mac;
 extern crate digest;
 extern crate hmac;
+#[cfg(feature = "openssl")]
+extern crate openssl;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
