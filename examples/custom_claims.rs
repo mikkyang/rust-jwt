@@ -1,10 +1,11 @@
+extern crate hmac;
 extern crate jwt;
 #[macro_use]
 extern crate serde_derive;
 extern crate sha2;
 
-use jwt::{Header, Token};
-use sha2::Digest;
+use hmac::{Hmac, Mac};
+use jwt::{parse_and_verify_with_algorithm, Header, Token};
 use sha2::Sha256;
 use std::default::Default;
 
@@ -14,10 +15,10 @@ struct Custom {
     rhino: bool,
 }
 
-fn new_token(user_id: &str, password: &str) -> Option<String> {
+fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
     // Dummy auth
     if password != "password" {
-        return None;
+        return Err("Wrong password");
     }
 
     let header: Header = Default::default();
@@ -26,19 +27,24 @@ fn new_token(user_id: &str, password: &str) -> Option<String> {
         rhino: true,
         ..Default::default()
     };
-    let token = Token::new(header, claims);
+    let unsigned_token = Token::new(header, claims);
 
-    token.signed(b"secret_key", Sha256::new()).ok()
+    let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
+
+    let signed_token = unsigned_token
+        .sign_with_algorithm(&key)
+        .map_err(|_e| "Sign error")?;
+    Ok(signed_token.into())
 }
 
-fn login(token: &str) -> Option<String> {
-    let token = Token::<Header, Custom>::parse(token).unwrap();
+fn login(token: &str) -> Result<String, &'static str> {
+    let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
 
-    if token.verify(b"secret_key", Sha256::new()) {
-        Some(token.claims.sub)
-    } else {
-        None
-    }
+    let token: Token<Header, Custom, _> =
+        parse_and_verify_with_algorithm(token, &key).map_err(|_e| "Verification failed")?;
+
+    let (_, claims) = token.into();
+    Ok(claims.sub)
 }
 
 fn main() {
