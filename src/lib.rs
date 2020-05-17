@@ -19,7 +19,7 @@ pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
-pub use crate::signature::{Unverified, Verified};
+pub use crate::signature::{Signed, Unsigned, Unverified, Verified};
 
 pub mod algorithm;
 pub mod claims;
@@ -73,6 +73,19 @@ where
         let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
         Ok(encoded_json_bytes)
     }
+}
+
+pub fn sign_with_key<H, C>(
+    header: H,
+    claims: C,
+    key: &dyn SigningAlgorithm,
+) -> Result<Token<H, C, Signed>, Error>
+where
+    H: Component,
+    C: Component,
+{
+    let unsigned = Token::new(header, claims);
+    unsigned.sign_with_key(key)
 }
 
 pub fn parse_and_verify_with_key<H, C>(
