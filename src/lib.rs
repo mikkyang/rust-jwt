@@ -2,6 +2,8 @@ extern crate base64;
 extern crate crypto_mac;
 extern crate digest;
 extern crate hmac;
+#[cfg(feature = "openssl")]
+extern crate openssl;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -13,7 +15,9 @@ use serde::Serialize;
 
 use digest::generic_array::ArrayLength;
 use digest::*;
+use hmac::{Hmac, Mac};
 
+pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
@@ -21,7 +25,6 @@ pub use crate::header::Header;
 
 pub mod algorithm;
 pub mod claims;
-mod crypt;
 pub mod error;
 pub mod header;
 
@@ -94,36 +97,56 @@ where
 
     /// Verify a from_base64d token with a key and a given hashing algorithm.
     /// Make sure to check the token's algorithm before applying.
-    pub fn verify<D>(&self, key: &[u8], digest: D) -> bool
+    pub fn verify<D>(&self, key: &[u8], _digest: D) -> bool
     where
-        D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+        D: Input
+            + BlockInput
+            + FixedOutput
+            + Reset
+            + Default
+            + Clone
+            + algorithm::rust_crypto::TypeLevelAlgorithmType,
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
-        let raw = match self.raw {
-            Some(ref s) => s,
-            None => return false,
-        };
-
-        let components: Vec<_> = raw.rsplitn(2, SEPARATOR).collect();
-        let (signature, payload) = match &*components {
-            [s, p] => (s, p),
-            _ => return false,
-        };
-
-        crypt::verify(signature, payload, key, digest)
+        self.raw
+            .as_ref()
+            .ok_or(Error::Format)
+            .and_then(|token| split_components(&*token))
+            .and_then(|[header, claims, signature]| {
+                // This will panic for bad key sizes. Returning an error
+                // would probably be better, but for now, I want to keep the
+                // API as stable as possible
+                let hmac = Hmac::<D>::new_varkey(key).unwrap();
+                VerifyingAlgorithm::verify(&hmac, &header, &claims, &signature)
+            })
+            .unwrap_or(false)
     }
 
     /// Generate the signed token from a key and a given hashing algorithm.
-    pub fn signed<D>(&self, key: &[u8], digest: D) -> Result<String, Error>
+    pub fn signed<D>(&self, key: &[u8], _digest: D) -> Result<String, Error>
     where
-        D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+        D: Input
+            + BlockInput
+            + FixedOutput
+            + Reset
+            + Default
+            + Clone
+            + algorithm::rust_crypto::TypeLevelAlgorithmType,
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
         let data = [self.header.to_base64()?, self.claims.to_base64()?].join(SEPARATOR);
 
-        let signature = crypt::sign(&*data, key, digest);
+        // This will panic for bad key sizes. Returning an error
+        // would probably be better, but for now, I want to keep the
+        // API as stable as possible
+        let hmac = Hmac::<D>::new_varkey(key).unwrap();
+        let mut components = data.split(SEPARATOR);
+        let header = components.next().unwrap();
+        let claims = components.next().unwrap();
+        let signature = SigningAlgorithm::sign(&hmac, header, claims).unwrap();
+
         let signed_token = [data, signature].join(SEPARATOR);
 
         Ok(signed_token)
@@ -140,37 +163,23 @@ where
     }
 }
 
+fn split_components(token: &str) -> Result<[&str; 3], Error> {
+    let mut components = token.split(SEPARATOR);
+    let header = components.next().ok_or(Error::Format)?;
+    let claims = components.next().ok_or(Error::Format)?;
+    let signature = components.next().ok_or(Error::Format)?;
+
+    Ok([header, claims, signature])
+}
+
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
     use crate::claims::Claims;
-    use crate::crypt::{sign, verify};
     use crate::header::Header;
     use crate::Token;
     use digest::Digest;
     use sha2::Sha256;
-
-    #[test]
-    pub fn sign_data() {
-        let header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
-        let real_sig = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let data = format!("{}.{}", header, claims);
-
-        let sig = sign(&*data, "secret".as_bytes(), Sha256::new());
-
-        assert_eq!(sig, real_sig);
-    }
-
-    #[test]
-    pub fn verify_data() {
-        let header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
-        let target = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let data = format!("{}.{}", header, claims);
-
-        assert!(verify(target, &*data, "secret".as_bytes(), Sha256::new()));
-    }
 
     #[test]
     pub fn raw_data() {

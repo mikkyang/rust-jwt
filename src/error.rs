@@ -1,4 +1,5 @@
 use base64::DecodeError;
+use crypto_mac::MacError;
 use serde_json::Error as JsonError;
 use std::fmt;
 use std::string::FromUtf8Error;
@@ -9,6 +10,9 @@ pub enum Error {
     Base64(DecodeError),
     Json(JsonError),
     Utf8(FromUtf8Error),
+    RustCryptoMac(MacError),
+    #[cfg(feature = "openssl")]
+    OpenSsl(openssl::error::ErrorStack),
 }
 
 impl fmt::Display for Error {
@@ -18,6 +22,9 @@ impl fmt::Display for Error {
             Error::Base64(ref x) => write!(f, "{}", x),
             Error::Json(ref x) => write!(f, "{}", x),
             Error::Utf8(ref x) => write!(f, "{}", x),
+            Error::RustCryptoMac(ref x) => write!(f, "{}", x),
+            #[cfg(feature = "openssl")]
+            Error::OpenSsl(ref x) => write!(f, "{}", x),
         }
     }
 }
@@ -35,3 +42,6 @@ macro_rules! error_wrap {
 error_wrap!(DecodeError, Error::Base64);
 error_wrap!(JsonError, Error::Json);
 error_wrap!(FromUtf8Error, Error::Utf8);
+error_wrap!(MacError, Error::RustCryptoMac);
+#[cfg(feature = "openssl")]
+error_wrap!(openssl::error::ErrorStack, Error::OpenSsl);
