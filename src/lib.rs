@@ -98,7 +98,13 @@ where
     /// Make sure to check the token's algorithm before applying.
     pub fn verify<D>(&self, key: &[u8], digest: D) -> bool
     where
-        D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+        D: Input
+            + BlockInput
+            + FixedOutput
+            + Reset
+            + Default
+            + Clone
+            + algorithm::rust_crypto::TypeLevelAlgorithmType,
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
@@ -119,7 +125,13 @@ where
     /// Generate the signed token from a key and a given hashing algorithm.
     pub fn signed<D>(&self, key: &[u8], digest: D) -> Result<String, Error>
     where
-        D: Input + BlockInput + FixedOutput + Reset + Default + Clone,
+        D: Input
+            + BlockInput
+            + FixedOutput
+            + Reset
+            + Default
+            + Clone
+            + algorithm::rust_crypto::TypeLevelAlgorithmType,
         D::BlockSize: ArrayLength<u8>,
         D::OutputSize: ArrayLength<u8>,
     {
