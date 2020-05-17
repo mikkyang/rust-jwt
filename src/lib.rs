@@ -27,6 +27,7 @@ pub mod algorithm;
 pub mod claims;
 pub mod error;
 pub mod header;
+pub mod signature;
 pub mod token;
 
 const SEPARATOR: &'static str = ".";
