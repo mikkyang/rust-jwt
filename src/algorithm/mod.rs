@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all="UPPERCASE")]
+#[serde(rename_all = "UPPERCASE")]
 pub enum AlgorithmType {
     Hs256,
     Hs384,
@@ -13,7 +13,7 @@ pub enum AlgorithmType {
     Ps256,
     Ps384,
     Ps512,
-    #[serde(rename="none")]
+    #[serde(rename = "none")]
     None,
 }
 

@@ -5,38 +5,37 @@ pub mod legacy;
 
 #[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Header {
-    #[serde(rename="alg")]
+    #[serde(rename = "alg")]
     pub algorithm: AlgorithmType,
 
-    #[serde(rename="kid", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "kid", skip_serializing_if = "Option::is_none")]
     pub key_id: Option<String>,
 
-    #[serde(rename="typ", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "typ", skip_serializing_if = "Option::is_none")]
     pub type_: Option<HeaderType>,
 
-    #[serde(rename="cty", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cty", skip_serializing_if = "Option::is_none")]
     pub content_type: Option<HeaderContentType>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all="UPPERCASE")]
+#[serde(rename_all = "UPPERCASE")]
 pub enum HeaderType {
-    #[serde(rename="JWT")]
+    #[serde(rename = "JWT")]
     JsonWebToken,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeaderContentType {
-    #[serde(rename="JWT")]
+    #[serde(rename = "JWT")]
     JsonWebToken,
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::Component;
     use crate::algorithm::AlgorithmType;
     use crate::header::{Header, HeaderType};
+    use crate::Component;
 
     #[test]
     fn from_base64() {
