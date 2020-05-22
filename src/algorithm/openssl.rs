@@ -82,6 +82,18 @@ mod tests {
     use openssl::hash::MessageDigest;
     use openssl::pkey::PKey;
 
+    // {"alg":"RS256","typ":"JWT"}
+    const RS256_HEADER: &'static str = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9";
+    // {"alg":"ES256","typ":"JWT"}
+    const ES256_HEADER: &'static str = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
+    // {"sub":"1234567890","name":"John Doe","admin":true}
+    const CLAIMS: &'static str =
+        "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
+
+    const RS256_SIGNATURE: &'static str =
+    "EkN-DOsnsuRjRO6BxXemmJDm3HbxrbRzXglbN2S4sOkopdU4IsDxTI8jO19W_A4K8ZPJijNLis4EZsHeY559a4DFOd50_OqgHGuERTqYZyuhtF39y\
+    xJPAjUESwxk2J5k_4zM3O-vtd1Ghyo4IbqKKSy6J9mTniYJPenn5-HIirE";
+
     #[test]
     fn rs256_sign() {
         let pem = include_bytes!("../../test/private_rsa.pem");
@@ -91,13 +103,8 @@ mod tests {
             key: PKey::private_key_from_pem(pem).unwrap(),
         };
 
-        let result = algorithm
-            .sign(
-                "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
-                "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9",
-            )
-            .unwrap();
-        assert_eq!(result, "EkN-DOsnsuRjRO6BxXemmJDm3HbxrbRzXglbN2S4sOkopdU4IsDxTI8jO19W_A4K8ZPJijNLis4EZsHeY559a4DFOd50_OqgHGuERTqYZyuhtF39yxJPAjUESwxk2J5k_4zM3O-vtd1Ghyo4IbqKKSy6J9mTniYJPenn5-HIirE");
+        let result = algorithm.sign(RS256_HEADER, CLAIMS).unwrap();
+        assert_eq!(result, RS256_SIGNATURE);
     }
 
     #[test]
@@ -109,25 +116,20 @@ mod tests {
             key: PKey::public_key_from_pem(pem).unwrap(),
         };
 
-        assert!(algorithm.verify(
-            "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
-            "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9",
-            "EkN-DOsnsuRjRO6BxXemmJDm3HbxrbRzXglbN2S4sOkopdU4IsDxTI8jO19W_A4K8ZPJijNLis4EZsHeY559a4DFOd50_OqgHGuERTqYZyuhtF39yxJPAjUESwxk2J5k_4zM3O-vtd1Ghyo4IbqKKSy6J9mTniYJPenn5-HIirE",
-        ).unwrap_or(false));
+        assert!(algorithm
+            .verify(RS256_HEADER, CLAIMS, RS256_SIGNATURE)
+            .unwrap_or(false));
     }
 
     #[test]
     fn es256() {
-        let header = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
-        let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
-
         let private_pem = include_bytes!("../../test/es256-private.pem");
         let private_key = PKeyWithDigest {
             digest: MessageDigest::sha256(),
             key: PKey::private_key_from_pem(private_pem).unwrap(),
         };
 
-        let signature = private_key.sign(header, claims).unwrap();
+        let signature = private_key.sign(ES256_HEADER, CLAIMS).unwrap();
 
         let public_pem = include_bytes!("../../test/es256-public.pem");
 
@@ -137,7 +139,7 @@ mod tests {
         };
 
         assert!(public_key
-            .verify(header, claims, &*signature)
+            .verify(ES256_HEADER, CLAIMS, &*signature)
             .unwrap_or(false));
     }
 }
