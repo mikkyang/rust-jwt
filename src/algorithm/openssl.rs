@@ -36,12 +36,7 @@ impl SigningAlgorithm for PKeyWithDigest<Private> {
         let signer_signature = signer.sign_to_vec()?;
 
         let signature = if self.key.id() == Id::EC {
-            let der_signature = signer_signature;
-
-            let signature = EcdsaSig::from_der(&der_signature)?;
-            let r = signature.r().to_vec();
-            let s = signature.s().to_vec();
-            [r, s].concat()
+            der_to_jose(&signer_signature)?
         } else {
             signer_signature
         };
@@ -62,17 +57,30 @@ impl VerifyingAlgorithm for PKeyWithDigest<Public> {
         verifier.update(claims.as_bytes())?;
 
         let verified = if self.key.id() == Id::EC {
-            let (r, s) = signature.split_at(signature.len() / 2);
-            let ecdsa_signature =
-                EcdsaSig::from_private_components(BigNum::from_slice(r)?, BigNum::from_slice(s)?)?;
-            let der_signature = ecdsa_signature.to_der()?;
-            verifier.verify(&der_signature)?
+            let der = jose_to_der(signature)?;
+            verifier.verify(&der)?
         } else {
             verifier.verify(signature)?
         };
 
         Ok(verified)
     }
+}
+
+/// OpenSSL by default signs ECDSA in DER, but JOSE expects them in a concatenated (R, S) format
+fn der_to_jose(der: &[u8]) -> Result<Vec<u8>, Error> {
+    let signature = EcdsaSig::from_der(&der)?;
+    let r = signature.r().to_vec();
+    let s = signature.s().to_vec();
+    Ok([r, s].concat())
+}
+
+/// OpenSSL by default verifies ECDSA in DER, but JOSE parses out a concatenated (R, S) format
+fn jose_to_der(jose: &[u8]) -> Result<Vec<u8>, Error> {
+    let (r, s) = jose.split_at(jose.len() / 2);
+    let ecdsa_signature =
+        EcdsaSig::from_private_components(BigNum::from_slice(r)?, BigNum::from_slice(s)?)?;
+    Ok(ecdsa_signature.to_der()?)
 }
 
 #[cfg(test)]
