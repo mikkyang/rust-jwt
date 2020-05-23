@@ -3,7 +3,7 @@ extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{parse_and_verify_with_key, Header, RegisteredClaims, Token};
+use jwt::{parse_and_verify_with_key, Header, RegisteredClaims, SignWithKey, Token};
 use sha2::Sha256;
 use std::default::Default;
 

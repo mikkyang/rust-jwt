@@ -21,6 +21,7 @@ pub use crate::error::Error;
 pub use crate::header::Header;
 pub use crate::signature::{Unsigned, Unverified, Verified};
 pub use crate::token::legacy::Component;
+pub use crate::token::signed::SignWithKey;
 
 pub mod algorithm;
 pub mod claims;
@@ -131,6 +132,7 @@ mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
     use crate::header::Header;
     use crate::parse_unverified;
+    use crate::token::signed::SignWithKey;
     use crate::Claims;
     use crate::Token;
     use hmac::Hmac;

@@ -1,7 +1,14 @@
 use crate::algorithm::SigningAlgorithm;
 use crate::error::Error;
+use crate::header::Header;
 use crate::signature::{Signed, Unsigned};
 use crate::{ToBase64, Token, SEPARATOR};
+
+pub trait SignWithKey {
+    type Output;
+
+    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Self::Output, Error>;
+}
 
 impl<H, C> Token<H, C, Unsigned> {
     pub fn new(header: H, claims: C) -> Self {
@@ -31,12 +38,14 @@ where
     }
 }
 
-impl<'a, H, C> Token<H, C, Unsigned>
+impl<H, C> SignWithKey for Token<H, C, Unsigned>
 where
     H: ToBase64,
     C: ToBase64,
 {
-    pub fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
+    type Output = Token<H, C, Signed>;
+
+    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Self::Output, Error> {
         let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
         let signature = key.sign(&header, &claims)?;
