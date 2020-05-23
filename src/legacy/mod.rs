@@ -6,6 +6,13 @@ use digest::generic_array::ArrayLength;
 use digest::*;
 use hmac::{Hmac, Mac};
 
+pub use crate::legacy::claims::Claims;
+pub use crate::legacy::claims::Registered;
+pub use crate::legacy::header::Header;
+
+pub mod claims;
+pub mod header;
+
 #[derive(Debug, Default)]
 pub struct Token<H, C>
 where
@@ -138,7 +145,7 @@ mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
     use crate::claims::Claims;
     use crate::header::Header;
-    use crate::token::legacy::Token;
+    use crate::legacy::Token;
     use digest::Digest;
     use sha2::Sha256;
 

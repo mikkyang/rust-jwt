@@ -1,9 +1,6 @@
 use serde_json;
 use std::collections::BTreeMap;
 
-#[allow(deprecated)]
-pub mod legacy;
-
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     #[serde(flatten)]
@@ -50,7 +47,7 @@ pub struct RegisteredClaims {
 #[cfg(test)]
 mod tests {
     use crate::claims::Claims;
-    use crate::Component;
+    use crate::{FromBase64, ToBase64};
     use serde_json::Value;
     use std::default::Default;
 
