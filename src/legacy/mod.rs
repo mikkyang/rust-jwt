@@ -7,6 +7,7 @@ use digest::*;
 use hmac::{Hmac, Mac};
 
 pub use crate::legacy::claims::Claims;
+pub use crate::legacy::claims::Registered;
 pub use crate::legacy::header::Header;
 
 pub mod claims;
