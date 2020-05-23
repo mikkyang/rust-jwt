@@ -1,6 +1,7 @@
 use crate::algorithm::{self, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
-use crate::{split_components, FromBase64, ToBase64, SEPARATOR};
+use crate::token::verified::split_components;
+use crate::{FromBase64, ToBase64, SEPARATOR};
 use digest::generic_array::ArrayLength;
 use digest::*;
 use hmac::{Hmac, Mac};

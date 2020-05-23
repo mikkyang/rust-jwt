@@ -86,15 +86,6 @@ impl<T: DeserializeOwned + Sized> FromBase64 for T {
     }
 }
 
-fn split_components(token: &str) -> Result<[&str; 3], Error> {
-    let mut components = token.split(SEPARATOR);
-    let header = components.next().ok_or(Error::Format)?;
-    let claims = components.next().ok_or(Error::Format)?;
-    let signature = components.next().ok_or(Error::Format)?;
-
-    Ok([header, claims, signature])
-}
-
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;

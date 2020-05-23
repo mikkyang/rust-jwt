@@ -2,7 +2,7 @@ use crate::algorithm::VerifyingAlgorithm;
 use crate::error::Error;
 use crate::header::Header;
 use crate::signature::{Unverified, Verified};
-use crate::{split_components, FromBase64, Token};
+use crate::{FromBase64, Token, SEPARATOR};
 
 pub trait VerifyWithKey<T> {
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<T, Error>;
@@ -58,4 +58,13 @@ impl<'a, H: FromBase64, C: FromBase64> Token<H, C, Unverified<'a>> {
             signature,
         })
     }
+}
+
+pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
+    let mut components = token.split(SEPARATOR);
+    let header = components.next().ok_or(Error::Format)?;
+    let claims = components.next().ok_or(Error::Format)?;
+    let signature = components.next().ok_or(Error::Format)?;
+
+    Ok([header, claims, signature])
 }
