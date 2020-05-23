@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Algorithm",""],["HeaderType",""]],"struct":[["Header",""]]});
+initSidebarItems({"enum":[["HeaderContentType",""],["HeaderType",""]],"struct":[["Header","Generic JWT header with defined fields for common fields."]],"trait":[["JoseHeader","A trait for any header than can conform to the JWT specification."]]});

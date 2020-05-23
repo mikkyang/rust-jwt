@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PKeyWithDigest","A wrapper class around PKey that associates the key with a MessageDigest."]]});
