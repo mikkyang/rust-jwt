@@ -1,6 +1,9 @@
 extern crate base64;
 extern crate crypto_mac;
 extern crate digest;
+#[cfg(doctest)]
+#[macro_use]
+extern crate doc_comment;
 extern crate hmac;
 #[cfg(feature = "openssl")]
 extern crate openssl;
@@ -9,6 +12,9 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
+
+#[cfg(doctest)]
+doctest!("../README.md");
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
