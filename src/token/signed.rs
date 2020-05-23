@@ -85,3 +85,25 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
         self.signature.token_string
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::token::signed::SignWithKey;
+    use hmac::{Hmac, Mac};
+    use sha2::Sha256;
+
+    #[derive(Serialize)]
+    struct Claims<'a> {
+        name: &'a str,
+    }
+
+    #[test]
+    pub fn sign_claims() {
+        let claims = Claims { name: "John Doe" };
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+
+        let signed_token = claims.sign_with_key(&key).unwrap();
+
+        assert_eq!(signed_token, "eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.LlTGHPZRXbci-y349jXXN0byQniQQqwKGybzQCFIgY0");
+    }
+}
