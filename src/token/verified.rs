@@ -1,5 +1,6 @@
 use crate::algorithm::VerifyingAlgorithm;
 use crate::error::Error;
+use crate::header::Header;
 use crate::signature::{Unverified, Verified};
 use crate::{split_components, FromBase64, Token};
 
@@ -29,6 +30,14 @@ impl<'a, H: FromBase64, C: FromBase64> VerifyWithKey<Token<H, C, Verified>> for 
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<Token<H, C, Verified>, Error> {
         let unverified = Token::parse_unverified(self)?;
         unverified.verify_with_key(key)
+    }
+}
+
+impl<'a, C: FromBase64> VerifyWithKey<C> for &'a str {
+    fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<C, Error> {
+        let unverified: Token<Header, C, _> = Token::parse_unverified(self)?;
+        let verified = unverified.verify_with_key(key)?;
+        Ok(verified.claims)
     }
 }
 

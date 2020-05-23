@@ -32,10 +32,9 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
 
 fn login(token: &str) -> Result<String, &'static str> {
     let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
-    let token: Token<Header, RegisteredClaims, _> =
+    let claims: RegisteredClaims =
         VerifyWithKey::verify_with_key(token, &key).map_err(|_e| "Parse failed")?;
 
-    let (_, claims) = token.into();
     claims.subject.ok_or("Missing subject")
 }
 
