@@ -19,7 +19,7 @@ pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
-pub use crate::signature::{Unverified, Verified};
+pub use crate::signature::{Unsigned, Unverified, Verified};
 pub use crate::token::legacy::Component;
 
 pub mod algorithm;
@@ -44,6 +44,14 @@ impl<H, C, S> Token<H, C, S> {
 
     pub fn claims(&self) -> &C {
         &self.claims
+    }
+
+    pub fn remove_signature(self) -> Token<H, C, Unsigned> {
+        Token {
+            header: self.header,
+            claims: self.claims,
+            signature: Unsigned,
+        }
     }
 }
 
