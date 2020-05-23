@@ -3,14 +3,7 @@ use crate::error::Error;
 use crate::signature::{Signed, Unsigned};
 use crate::{Component, Token, SEPARATOR};
 
-/// A completely unsigned token. Will have mutable header and claims fields.
-pub type UnsignedToken<H, C> = Token<H, C, Unsigned>;
-
-/// A signed token. In order to modify the header or claims, the signature must
-/// be removed.
-pub type SignedToken<H, C> = Token<H, C, Signed>;
-
-impl<H, C> Default for UnsignedToken<H, C>
+impl<H, C> Default for Token<H, C, Unsigned>
 where
     H: Default + Component,
     C: Default + Component,
@@ -20,7 +13,7 @@ where
     }
 }
 
-impl<'a, H, C> UnsignedToken<H, C>
+impl<'a, H, C> Token<H, C, Unsigned>
 where
     H: Component,
     C: Component,
@@ -44,7 +37,7 @@ where
     pub fn sign_with_algorithm(
         self,
         algorithm: &dyn SigningAlgorithm,
-    ) -> Result<SignedToken<H, C>, Error> {
+    ) -> Result<Token<H, C, Signed>, Error> {
         let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
         let signature = algorithm.sign(&header, &claims)?;
@@ -59,7 +52,7 @@ where
     }
 }
 
-impl<'a, H, C> SignedToken<H, C>
+impl<'a, H, C> Token<H, C, Signed>
 where
     H: Component,
     C: Component,
@@ -69,7 +62,7 @@ where
     }
 }
 
-impl<H, C> Into<String> for SignedToken<H, C> {
+impl<H, C> Into<String> for Token<H, C, Signed> {
     fn into(self) -> String {
         self.signature.token_string
     }
