@@ -1,7 +1,7 @@
 //! Algorithms capable of signing and verifying tokens. By default only the
 //! `hmac` crate's `Hmac` type is supported. For more algorithms, enable the
 //! feature `openssl` and see the [openssl](openssl/index.html)
-//! module.
+//! module. The `none` algorithm is explicitly not supported.
 //! ## Examples
 //! ```
 //! extern crate hmac;
@@ -19,6 +19,8 @@ use crate::error::Error;
 pub mod openssl;
 pub mod rust_crypto;
 
+/// The type of an algorithm, corresponding to the
+/// [JWA](https://tools.ietf.org/html/rfc7518) specification.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AlgorithmType {
@@ -44,16 +46,15 @@ impl Default for AlgorithmType {
     }
 }
 
-/// An algorithm capable of signing already base64 encoded header and claims
+/// An algorithm capable of signing base64 encoded header and claims strings.
 /// strings.
-/// By default, only Hmac from the `hmac` crate is supported.
-/// For more algorithms, use
 pub trait SigningAlgorithm {
     fn algorithm_type(&self) -> AlgorithmType;
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error>;
 }
 
+/// An algorithm capable of verifying base64 encoded header and claims strings.
 pub trait VerifyingAlgorithm {
     fn algorithm_type(&self) -> AlgorithmType;
 
