@@ -38,6 +38,20 @@ where
     }
 }
 
+impl<C: ToBase64> SignWithKey for C {
+    type Output = String;
+
+    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Self::Output, Error> {
+        let header = Header {
+            algorithm: key.algorithm_type(),
+            ..Default::default()
+        };
+
+        let token = Token::new(header, self).sign_with_key(key)?;
+        Ok(token.signature.token_string)
+    }
+}
+
 impl<H, C> SignWithKey for Token<H, C, Unsigned>
 where
     H: ToBase64,
