@@ -26,7 +26,6 @@ pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::{Header, JoseHeader};
 pub use crate::signature::{Unsigned, Unverified, Verified};
-pub use crate::token::legacy::Component;
 pub use crate::token::signed::SignWithKey;
 pub use crate::token::verified::VerifyWithKey;
 

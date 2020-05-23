@@ -47,7 +47,7 @@ pub struct RegisteredClaims {
 #[cfg(test)]
 mod tests {
     use crate::claims::Claims;
-    use crate::Component;
+    use crate::{FromBase64, ToBase64};
     use serde_json::Value;
     use std::default::Default;
 

@@ -66,7 +66,7 @@ pub enum HeaderContentType {
 mod tests {
     use crate::algorithm::AlgorithmType;
     use crate::header::{Header, HeaderType};
-    use crate::Component;
+    use crate::{FromBase64, ToBase64};
 
     #[test]
     fn from_base64() {
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn roundtrip() {
         let header: Header = Default::default();
-        let enc = Component::to_base64(&header).unwrap();
+        let enc = header.to_base64().unwrap();
         assert_eq!(header, Header::from_base64(&*enc).unwrap());
     }
 }
