@@ -1,6 +1,6 @@
 use crate::algorithm::{self, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
-use crate::{split_components, Component, SEPARATOR};
+use crate::{split_components, FromBase64, ToBase64, SEPARATOR};
 use digest::generic_array::ArrayLength;
 use digest::*;
 use hmac::{Hmac, Mac};
@@ -112,6 +112,23 @@ where
 {
     fn eq(&self, other: &Token<H, C>) -> bool {
         self.header == other.header && self.claims == other.claims
+    }
+}
+
+pub trait Component: Sized {
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
+    fn to_base64(&self) -> Result<String, Error>;
+}
+
+impl<T: ToBase64 + FromBase64> Component for T {
+    /// Parse from a string.
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
+        FromBase64::from_base64(raw)
+    }
+
+    /// Encode to a string.
+    fn to_base64(&self) -> Result<String, Error> {
+        ToBase64::to_base64(self).map(Into::<String>::into)
     }
 }
 

@@ -12,6 +12,7 @@ extern crate sha2;
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::borrow::Cow;
 use std::convert::TryFrom;
 
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
@@ -20,6 +21,7 @@ pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
 pub use crate::signature::{Signed, Unsigned, Unverified, Verified};
+pub use crate::token::legacy::Component;
 
 pub mod algorithm;
 pub mod claims;
@@ -60,38 +62,11 @@ impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
     }
 }
 
-pub trait Component: Sized {
-    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
-    fn to_base64(&self) -> Result<String, Error>;
-}
-
-impl<T> Component for T
-where
-    T: Serialize + DeserializeOwned + Sized,
-{
-    /// Parse from a string.
-    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
-        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
-        Ok(serde_json::from_slice(&json_bytes)?)
-    }
-
-    /// Encode to a string.
-    fn to_base64(&self) -> Result<String, Error> {
-        let json_bytes = serde_json::to_vec(&self)?;
-        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
-        Ok(encoded_json_bytes)
-    }
-}
-
-pub fn sign_with_key<H, C>(
+pub fn sign_with_key<H: ToBase64, C: ToBase64>(
     header: H,
     claims: C,
     key: &dyn SigningAlgorithm,
-) -> Result<Token<H, C, Signed>, Error>
-where
-    H: Component,
-    C: Component,
-{
+) -> Result<Token<H, C, Signed>, Error> {
     let unsigned = Token::new(header, claims);
     unsigned.sign_with_key(key)
 }
@@ -106,6 +81,29 @@ where
 {
     let unverifed: Token<H, C, Unverified> = Token::try_from(token_str)?;
     unverifed.verify_with_key(key)
+}
+
+pub trait ToBase64 {
+    fn to_base64(&self) -> Result<Cow<str>, Error>;
+}
+
+impl<T: Serialize> ToBase64 for T {
+    fn to_base64(&self) -> Result<Cow<str>, Error> {
+        let json_bytes = serde_json::to_vec(&self)?;
+        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
+        Ok(Cow::Owned(encoded_json_bytes))
+    }
+}
+
+pub trait FromBase64: Sized {
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
+}
+
+impl<T: DeserializeOwned + Sized> FromBase64 for T {
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error> {
+        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        Ok(serde_json::from_slice(&json_bytes)?)
+    }
 }
 
 fn split_components(token: &str) -> Result<[&str; 3], Error> {
