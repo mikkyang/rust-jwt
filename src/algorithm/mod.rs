@@ -1,3 +1,18 @@
+//! Algorithms capable of signing and verifying tokens. By default only the
+//! `hmac` crate's `Hmac` type is supported. For more algorithms, enable the
+//! feature `openssl` and see the [openssl](openssl/index.html)
+//! module.
+//! ## Examples
+//! ```
+//! extern crate hmac;
+//! extern crate sha2;
+//!
+//! use hmac::{Hmac, Mac};
+//! use sha2::Sha256;
+//! 
+//! let hs256_key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
+//! ```
+
 use crate::error::Error;
 
 #[cfg(feature = "openssl")]
@@ -29,6 +44,10 @@ impl Default for AlgorithmType {
     }
 }
 
+/// An algorithm capable of signing already base64 encoded header and claims
+/// strings.
+/// By default, only Hmac from the `hmac` crate is supported.
+/// For more algorithms, use
 pub trait SigningAlgorithm {
     fn algorithm_type(&self) -> AlgorithmType;
 
