@@ -1,9 +1,6 @@
 use serde_json;
 use std::collections::BTreeMap;
 
-#[allow(deprecated)]
-pub mod legacy;
-
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     #[serde(flatten)]

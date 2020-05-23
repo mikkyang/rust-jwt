@@ -36,7 +36,7 @@ impl Claims {
 
 #[cfg(test)]
 mod tests {
-    use crate::claims::legacy::Claims;
+    use crate::legacy::Claims;
     use crate::Component;
     use serde_json::Value;
     use std::default::Default;
