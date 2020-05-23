@@ -18,7 +18,7 @@ and verification can be done with just a few traits.
 
 #### Signing
 
-Claims can be any `serde::Serializable` type, usually derived with
+Claims can be any `serde::Serialize` type, usually derived with
 `serde_derive`.
 
 ```rust
@@ -62,6 +62,40 @@ let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str,
 
 assert_eq!(claims["sub"], "someone");
 ```
+
+### Header and Claims
+
+If you need to customize the header, you can use the `Token` struct. For
+convenience, a `Header` struct is provided for all of the commonly defined
+fields, but any type that implements `JoseHeader` can be used.
+
+#### Signing
+
+Both header and claims have to implement `serde::Serialize`.
+
+```rust
+extern crate hmac;
+extern crate jwt;
+extern crate sha2;
+
+use hmac::{Hmac, Mac};
+use jwt::{AlgorithmType, Header, SignWithKey, Token};
+use sha2::Sha384;
+use std::collections::BTreeMap;
+
+let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+let header = Header {
+    algorithm: AlgorithmType::Hs384,
+    ..Default::default()
+};
+let mut claims = BTreeMap::new();
+claims.insert("sub", "someone");
+
+let token = Token::new(header, claims).sign_with_key(&key).unwrap();
+
+assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_");
+```
+
 
 The library provides a `Token` type that wraps a header and claims. The header
 and claims can be any types that implement the `Component` trait, which is
