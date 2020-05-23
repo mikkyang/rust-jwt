@@ -1,9 +1,9 @@
+use crate::algorithm::AlgorithmType;
 use base64::DecodeError;
 use crypto_mac::MacError;
 use serde_json::Error as JsonError;
 use std::fmt;
 use std::string::FromUtf8Error;
-use crate::algorithm::AlgorithmType;
 
 #[derive(Debug)]
 pub enum Error {
@@ -20,8 +20,9 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match *self {
-            Error::AlgorithmMismatch(a, b) =>
-                write!(f, "Expected algorithm type {:?} but found {:?}", a, b),
+            Error::AlgorithmMismatch(a, b) => {
+                write!(f, "Expected algorithm type {:?} but found {:?}", a, b)
+            }
             Error::Format => write!(f, "Format"),
             Error::Base64(ref x) => write!(f, "{}", x),
             Error::Json(ref x) => write!(f, "{}", x),

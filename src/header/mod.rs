@@ -3,6 +3,22 @@ use crate::algorithm::AlgorithmType;
 #[allow(deprecated)]
 pub mod legacy;
 
+pub trait JoseHeader {
+    fn algorithm_type(&self) -> AlgorithmType;
+
+    fn key_id(&self) -> Option<&str> {
+        None
+    }
+
+    fn type_(&self) -> Option<HeaderType> {
+        None
+    }
+
+    fn content_type(&self) -> Option<HeaderContentType> {
+        None
+    }
+}
+
 #[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Header {
     #[serde(rename = "alg")]
@@ -18,14 +34,32 @@ pub struct Header {
     pub content_type: Option<HeaderContentType>,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+impl JoseHeader for Header {
+    fn algorithm_type(&self) -> AlgorithmType {
+        self.algorithm
+    }
+
+    fn key_id(&self) -> Option<&str> {
+        self.key_id.as_ref().map(|s| &**s)
+    }
+
+    fn type_(&self) -> Option<HeaderType> {
+        self.type_
+    }
+
+    fn content_type(&self) -> Option<HeaderContentType> {
+        self.content_type
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum HeaderType {
     #[serde(rename = "JWT")]
     JsonWebToken,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeaderContentType {
     #[serde(rename = "JWT")]
     JsonWebToken,
