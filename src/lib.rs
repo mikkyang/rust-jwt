@@ -10,12 +10,12 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
 
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-
 use digest::generic_array::ArrayLength;
 use digest::*;
 use hmac::{Hmac, Mac};
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+use std::borrow::Cow;
 
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
@@ -46,21 +46,18 @@ pub trait Component: Sized {
     fn to_base64(&self) -> Result<String, Error>;
 }
 
-impl<T> Component for T
+impl<T: ToBase64 + FromBase64> Component for T
 where
     T: Serialize + DeserializeOwned + Sized,
 {
     /// Parse from a string.
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
-        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
-        Ok(serde_json::from_slice(&json_bytes)?)
+        FromBase64::from_base64(raw)
     }
 
     /// Encode to a string.
     fn to_base64(&self) -> Result<String, Error> {
-        let json_bytes = serde_json::to_vec(&self)?;
-        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
-        Ok(encoded_json_bytes)
+        ToBase64::to_base64(self).map(Into::<String>::into)
     }
 }
 
@@ -160,6 +157,29 @@ where
 {
     fn eq(&self, other: &Token<H, C>) -> bool {
         self.header == other.header && self.claims == other.claims
+    }
+}
+
+pub trait ToBase64 {
+    fn to_base64(&self) -> Result<Cow<str>, Error>;
+}
+
+impl<T: Serialize> ToBase64 for T {
+    fn to_base64(&self) -> Result<Cow<str>, Error> {
+        let json_bytes = serde_json::to_vec(&self)?;
+        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
+        Ok(Cow::Owned(encoded_json_bytes))
+    }
+}
+
+pub trait FromBase64: Sized {
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
+}
+
+impl<T: DeserializeOwned + Sized> FromBase64 for T {
+    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error> {
+        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        Ok(serde_json::from_slice(&json_bytes)?)
     }
 }
 
