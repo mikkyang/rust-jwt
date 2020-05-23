@@ -1,5 +1,9 @@
+//! Convenience structs for commonly defined fields in headers.
+
 use crate::algorithm::AlgorithmType;
 
+/// A trait for any header than can conform to the
+/// [JWT specification](https://tools.ietf.org/html/rfc7519#page-11).
 pub trait JoseHeader {
     fn algorithm_type(&self) -> AlgorithmType;
 
@@ -16,6 +20,8 @@ pub trait JoseHeader {
     }
 }
 
+/// Generic [JWT header](https://tools.ietf.org/html/rfc7519#page-11) with
+/// defined fields for common fields.
 #[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Header {
     #[serde(rename = "alg")]

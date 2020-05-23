@@ -20,6 +20,8 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::borrow::Cow;
 
+#[cfg(feature = "openssl")]
+pub use crate::algorithm::openssl::PKeyWithDigest;
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
@@ -40,6 +42,8 @@ pub mod token;
 
 const SEPARATOR: &'static str = ".";
 
+/// Representation of a structured JWT. Methods vary based on the signature
+/// type `S`.
 pub struct Token<H, C, S> {
     header: H,
     claims: C,
@@ -70,6 +74,12 @@ impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
     }
 }
 
+/// A trait used to convert objects in base64 encoding. The return type can
+/// be either owned if the header is dynamic, or it can be borrowed if the
+/// header is a static, pre-computed value. It is implemented automatically
+/// for every type that implements
+/// [Serialize](../../serde/trait.Serialize.html). as a base64 encoding of
+/// the object's JSON representation.
 pub trait ToBase64 {
     fn to_base64(&self) -> Result<Cow<str>, Error>;
 }
@@ -82,6 +92,13 @@ impl<T: Serialize> ToBase64 for T {
     }
 }
 
+
+/// A trait used to parse objects from base64 encoding. The return type can
+/// be either owned if the header is dynamic, or it can be borrowed if the
+/// header is a static, pre-computed value. It is implemented automatically
+/// for every type that implements
+/// [DeserializeOwned](../../serde/de/trait.DeserializeOwned.html) for
+/// the base64 encoded JSON representation.
 pub trait FromBase64: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
 }

@@ -1,3 +1,22 @@
+//! OpenSSL support through the openssl crate.
+//! Note that private keys can only be used for signing and that public keys
+//! can only be used for verification.
+//! ## Examples
+//! ```
+//! extern crate jwt;
+//! extern crate openssl;
+//!
+//! use jwt::PKeyWithDigest;
+//! use openssl::hash::MessageDigest;
+//! use openssl::pkey::PKey;
+//! let pem = include_bytes!("../../test/rs256-public.pem");
+//! let rs256_public_key = PKeyWithDigest {
+//!     digest: MessageDigest::sha256(),
+//!     key: PKey::public_key_from_pem(pem).unwrap(),
+//! };
+//!
+//! ```
+
 use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
 use crate::SEPARATOR;
@@ -8,6 +27,9 @@ use openssl::nid::Nid;
 use openssl::pkey::{Id, PKey, Private, Public};
 use openssl::sign::{Signer, Verifier};
 
+/// A wrapper class around [PKey](../../../openssl/pkey/struct.PKey.html) that
+/// associates the key with a
+/// [MessageDigest](../../../openssl/hash/struct.MessageDigest.html).
 pub struct PKeyWithDigest<T> {
     pub digest: MessageDigest,
     pub key: PKey<T>,
