@@ -22,11 +22,13 @@ pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
+pub use crate::token::legacy::Component;
 
 pub mod algorithm;
 pub mod claims;
 pub mod error;
 pub mod header;
+pub mod token;
 
 #[derive(Debug, Default)]
 pub struct Token<H, C>
@@ -40,26 +42,6 @@ where
 }
 
 const SEPARATOR: &'static str = ".";
-
-pub trait Component: Sized {
-    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
-    fn to_base64(&self) -> Result<String, Error>;
-}
-
-impl<T: ToBase64 + FromBase64> Component for T
-where
-    T: Serialize + DeserializeOwned + Sized,
-{
-    /// Parse from a string.
-    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
-        FromBase64::from_base64(raw)
-    }
-
-    /// Encode to a string.
-    fn to_base64(&self) -> Result<String, Error> {
-        ToBase64::to_base64(self).map(Into::<String>::into)
-    }
-}
 
 impl<H, C> Token<H, C>
 where
