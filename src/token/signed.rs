@@ -1,7 +1,7 @@
 use crate::algorithm::SigningAlgorithm;
 use crate::error::Error;
 use crate::header::{Header, JoseHeader};
-use crate::signature::{Signed, Unsigned};
+use crate::token::{Signed, Unsigned};
 use crate::{ToBase64, Token, SEPARATOR};
 
 pub trait SignWithKey<T> {

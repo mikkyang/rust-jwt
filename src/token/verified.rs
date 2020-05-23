@@ -1,7 +1,7 @@
 use crate::algorithm::VerifyingAlgorithm;
 use crate::error::Error;
 use crate::header::{Header, JoseHeader};
-use crate::signature::{Unverified, Verified};
+use crate::token::{Unverified, Verified};
 use crate::{FromBase64, Token, SEPARATOR};
 
 pub trait VerifyWithKey<T> {
