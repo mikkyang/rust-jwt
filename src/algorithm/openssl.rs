@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn rs256_sign() {
-        let pem = include_bytes!("../../test/private_rsa.pem");
+        let pem = include_bytes!("../../test/rs256-private.pem");
 
         let algorithm = PKeyWithDigest {
             digest: MessageDigest::sha256(),
@@ -109,7 +109,7 @@ mod tests {
 
     #[test]
     fn rs256_verify() {
-        let pem = include_bytes!("../../test/public_rsa.pem");
+        let pem = include_bytes!("../../test/rs256-public.pem");
 
         let algorithm = PKeyWithDigest {
             digest: MessageDigest::sha256(),
