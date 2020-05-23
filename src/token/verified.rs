@@ -25,6 +25,13 @@ impl<'a, H, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, Unverified<'
     }
 }
 
+impl<'a, H: FromBase64, C: FromBase64> VerifyWithKey<Token<H, C, Verified>> for &'a str {
+    fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<Token<H, C, Verified>, Error> {
+        let unverified = Token::parse_unverified(self)?;
+        unverified.verify_with_key(key)
+    }
+}
+
 impl<'a, H: FromBase64, C: FromBase64> Token<H, C, Unverified<'a>> {
     pub fn parse_unverified(token_str: &str) -> Result<Token<H, C, Unverified>, Error> {
         let [header_str, claims_str, signature_str] = split_components(token_str)?;

@@ -3,7 +3,7 @@ extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{parse_and_verify_with_key, Header, RegisteredClaims, SignWithKey, Token};
+use jwt::{Header, RegisteredClaims, SignWithKey, Token, VerifyWithKey};
 use sha2::Sha256;
 use std::default::Default;
 
@@ -33,7 +33,7 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
 fn login(token: &str) -> Result<String, &'static str> {
     let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
     let token: Token<Header, RegisteredClaims, _> =
-        parse_and_verify_with_key(token, &key).map_err(|_e| "Parse failed")?;
+        VerifyWithKey::verify_with_key(token, &key).map_err(|_e| "Parse failed")?;
 
     let (_, claims) = token.into();
     claims.subject.ok_or("Missing subject")

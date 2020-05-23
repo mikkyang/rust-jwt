@@ -63,18 +63,6 @@ impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
     }
 }
 
-pub fn parse_and_verify_with_key<H, C>(
-    token_str: &str,
-    key: &dyn VerifyingAlgorithm,
-) -> Result<Token<H, C, Verified>, Error>
-where
-    H: FromBase64,
-    C: FromBase64,
-{
-    let unverifed: Token<_, _, Unverified> = Token::parse_unverified(token_str)?;
-    unverifed.verify_with_key(key)
-}
-
 pub trait ToBase64 {
     fn to_base64(&self) -> Result<Cow<str>, Error>;
 }
