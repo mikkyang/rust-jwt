@@ -4,8 +4,6 @@ use crate::{split_components, FromBase64, ToBase64, SEPARATOR};
 use digest::generic_array::ArrayLength;
 use digest::*;
 use hmac::{Hmac, Mac};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
 
 #[derive(Debug, Default)]
 pub struct Token<H, C>
@@ -122,10 +120,7 @@ pub trait Component: Sized {
     fn to_base64(&self) -> Result<String, Error>;
 }
 
-impl<T: ToBase64 + FromBase64> Component for T
-where
-    T: Serialize + DeserializeOwned + Sized,
-{
+impl<T: ToBase64 + FromBase64> Component for T {
     /// Parse from a string.
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
         FromBase64::from_base64(raw)
