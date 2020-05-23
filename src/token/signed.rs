@@ -1,7 +1,7 @@
 use crate::algorithm::SigningAlgorithm;
 use crate::error::Error;
 use crate::signature::{Signed, Unsigned};
-use crate::{Component, Token, SEPARATOR};
+use crate::{ToBase64, Token, SEPARATOR};
 
 impl<H, C> Token<H, C, Unsigned> {
     pub fn new(header: H, claims: C) -> Self {
@@ -33,8 +33,8 @@ where
 
 impl<'a, H, C> Token<H, C, Unsigned>
 where
-    H: Component,
-    C: Component,
+    H: ToBase64,
+    C: ToBase64,
 {
     pub fn sign_with_algorithm(
         self,
@@ -44,7 +44,7 @@ where
         let claims = self.claims.to_base64()?;
         let signature = algorithm.sign(&header, &claims)?;
 
-        let token_string = [header, claims, signature].join(SEPARATOR);
+        let token_string = [&*header, &*claims, &signature].join(SEPARATOR);
 
         Ok(Token {
             header: self.header,
