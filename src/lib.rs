@@ -63,36 +63,15 @@ impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
     }
 }
 
-pub fn parse_unverified<H, C>(token_str: &str) -> Result<Token<H, C, Unverified>, Error>
-where
-    H: Component,
-    C: Component,
-{
-    let [header_str, claims_str, signature_str] = split_components(token_str)?;
-    let header = Component::from_base64(header_str)?;
-    let claims = Component::from_base64(claims_str)?;
-    let signature = Unverified {
-        header_str,
-        claims_str,
-        signature_str,
-    };
-
-    Ok(Token {
-        header,
-        claims,
-        signature,
-    })
-}
-
 pub fn parse_and_verify_with_key<H, C>(
     token_str: &str,
     key: &dyn VerifyingAlgorithm,
 ) -> Result<Token<H, C, Verified>, Error>
 where
-    H: Component,
-    C: Component,
+    H: FromBase64,
+    C: FromBase64,
 {
-    let unverifed = parse_unverified(token_str)?;
+    let unverifed: Token<_, _, Unverified> = Token::parse_unverified(token_str)?;
     unverifed.verify_with_key(key)
 }
 
@@ -132,7 +111,6 @@ fn split_components(token: &str) -> Result<[&str; 3], Error> {
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
     use crate::header::Header;
-    use crate::parse_unverified;
     use crate::token::signed::SignWithKey;
     use crate::token::verified::VerifyWithKey;
     use crate::Claims;
@@ -144,7 +122,7 @@ mod tests {
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token: Token<Header, Claims, _> = parse_unverified(raw).unwrap();
+        let token: Token<Header, Claims, _> = Token::parse_unverified(raw).unwrap();
 
         assert_eq!(token.header.algorithm, Hs256);
 
@@ -159,7 +137,7 @@ mod tests {
         let signed_token = token.sign_with_key(&key).unwrap();
         let signed_token_str = signed_token.as_str();
 
-        let recreated_token: Token<Header, Claims, _> = parse_unverified(signed_token_str).unwrap();
+        let recreated_token: Token<Header, Claims, _> = Token::parse_unverified(signed_token_str).unwrap();
 
         assert_eq!(signed_token.header(), recreated_token.header());
         assert_eq!(signed_token.claims(), recreated_token.claims());

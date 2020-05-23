@@ -1,7 +1,7 @@
 use crate::algorithm::VerifyingAlgorithm;
 use crate::error::Error;
 use crate::signature::{Unverified, Verified};
-use crate::Token;
+use crate::{split_components, FromBase64, Token};
 
 pub trait VerifyWithKey {
     type Output;
@@ -25,6 +25,25 @@ impl<'a, H, C> VerifyWithKey for Token<H, C, Unverified<'a>> {
             header: self.header,
             claims: self.claims,
             signature: Verified,
+        })
+    }
+}
+
+impl<'a, H: FromBase64, C: FromBase64> Token<H, C, Unverified<'a>> {
+    pub fn parse_unverified(token_str: &str) -> Result<Token<H, C, Unverified>, Error> {
+        let [header_str, claims_str, signature_str] = split_components(token_str)?;
+        let header = H::from_base64(header_str)?;
+        let claims = C::from_base64(claims_str)?;
+        let signature = Unverified {
+            header_str,
+            claims_str,
+            signature_str,
+        };
+
+        Ok(Token {
+            header,
+            claims,
+            signature,
         })
     }
 }
