@@ -36,13 +36,10 @@ where
     H: ToBase64,
     C: ToBase64,
 {
-    pub fn sign_with_algorithm(
-        self,
-        algorithm: &dyn SigningAlgorithm,
-    ) -> Result<Token<H, C, Signed>, Error> {
+    pub fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
         let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
-        let signature = algorithm.sign(&header, &claims)?;
+        let signature = key.sign(&header, &claims)?;
 
         let token_string = [&*header, &*claims, &signature].join(SEPARATOR);
 

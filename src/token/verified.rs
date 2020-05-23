@@ -4,9 +4,9 @@ use crate::signature::{Unverified, Verified};
 use crate::Token;
 
 impl<'a, H, C> Token<H, C, Unverified<'a>> {
-    pub fn verify_with_algorithm(
+    pub fn verify_with_key(
         self,
-        algorithm: &dyn VerifyingAlgorithm,
+        key: &dyn VerifyingAlgorithm,
     ) -> Result<Token<H, C, Verified>, Error> {
         let Unverified {
             header_str,
@@ -14,7 +14,7 @@ impl<'a, H, C> Token<H, C, Unverified<'a>> {
             signature_str,
         } = self.signature;
 
-        algorithm.verify(header_str, claims_str, signature_str)?;
+        key.verify(header_str, claims_str, signature_str)?;
 
         Ok(Token {
             header: self.header,
