@@ -14,7 +14,7 @@
 //!     digest: MessageDigest::sha256(),
 //!     key: PKey::public_key_from_pem(pem).unwrap(),
 //! };
-//! 
+//!
 //! ```
 
 use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};

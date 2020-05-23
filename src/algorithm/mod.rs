@@ -9,7 +9,7 @@
 //!
 //! use hmac::{Hmac, Mac};
 //! use sha2::Sha256;
-//! 
+//!
 //! let hs256_key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
 //! ```
 
