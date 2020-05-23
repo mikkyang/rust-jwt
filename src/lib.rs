@@ -22,6 +22,7 @@ pub use crate::header::Header;
 pub use crate::signature::{Unsigned, Unverified, Verified};
 pub use crate::token::legacy::Component;
 pub use crate::token::signed::SignWithKey;
+pub use crate::token::verified::VerifyWithKey;
 
 pub mod algorithm;
 pub mod claims;
@@ -133,6 +134,7 @@ mod tests {
     use crate::header::Header;
     use crate::parse_unverified;
     use crate::token::signed::SignWithKey;
+    use crate::token::verified::VerifyWithKey;
     use crate::Claims;
     use crate::Token;
     use hmac::Hmac;
