@@ -28,7 +28,6 @@ pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::{Header, JoseHeader};
 pub use crate::signature::{Unsigned, Unverified, Verified};
-pub use crate::token::legacy::Component;
 pub use crate::token::signed::SignWithKey;
 pub use crate::token::verified::VerifyWithKey;
 
@@ -36,6 +35,8 @@ pub mod algorithm;
 pub mod claims;
 pub mod error;
 pub mod header;
+#[allow(deprecated)]
+pub mod legacy;
 pub mod signature;
 pub mod token;
 
