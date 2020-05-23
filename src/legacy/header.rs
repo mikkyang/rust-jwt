@@ -33,7 +33,7 @@ impl Default for Header {
 
 #[cfg(test)]
 mod tests {
-    use crate::header::legacy::{Algorithm, Header, HeaderType};
+    use crate::legacy::header::{Algorithm, Header, HeaderType};
     use crate::Component;
 
     #[test]

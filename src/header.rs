@@ -1,8 +1,5 @@
 use crate::algorithm::AlgorithmType;
 
-#[allow(deprecated)]
-pub mod legacy;
-
 pub trait JoseHeader {
     fn algorithm_type(&self) -> AlgorithmType;
 
