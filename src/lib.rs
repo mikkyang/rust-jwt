@@ -1,6 +1,9 @@
 extern crate base64;
 extern crate crypto_mac;
 extern crate digest;
+#[cfg(doctest)]
+#[macro_use]
+extern crate doc_comment;
 extern crate hmac;
 #[cfg(feature = "openssl")]
 extern crate openssl;
@@ -10,9 +13,9 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
 
-use digest::generic_array::ArrayLength;
-use digest::*;
-use hmac::{Hmac, Mac};
+#[cfg(doctest)]
+doctest!("../README.md");
+
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -22,123 +25,47 @@ pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::Header;
+pub use crate::signature::{Unsigned, Unverified, Verified};
 pub use crate::token::legacy::Component;
+pub use crate::token::signed::SignWithKey;
+pub use crate::token::verified::VerifyWithKey;
 
 pub mod algorithm;
 pub mod claims;
 pub mod error;
 pub mod header;
+pub mod signature;
 pub mod token;
-
-#[derive(Debug, Default)]
-pub struct Token<H, C>
-where
-    H: Component,
-    C: Component,
-{
-    raw: Option<String>,
-    pub header: H,
-    pub claims: C,
-}
 
 const SEPARATOR: &'static str = ".";
 
-impl<H, C> Token<H, C>
-where
-    H: Component,
-    C: Component,
-{
-    pub fn new(header: H, claims: C) -> Token<H, C> {
+pub struct Token<H, C, S> {
+    header: H,
+    claims: C,
+    signature: S,
+}
+
+impl<H, C, S> Token<H, C, S> {
+    pub fn header(&self) -> &H {
+        &self.header
+    }
+
+    pub fn claims(&self) -> &C {
+        &self.claims
+    }
+
+    pub fn remove_signature(self) -> Token<H, C, Unsigned> {
         Token {
-            raw: None,
-            header: header,
-            claims: claims,
+            header: self.header,
+            claims: self.claims,
+            signature: Unsigned,
         }
-    }
-
-    /// Parse a token from a string.
-    pub fn parse(raw: &str) -> Result<Token<H, C>, Error> {
-        let components: Vec<_> = raw.split(SEPARATOR).collect();
-        let (header, claims) = match &*components {
-            [header, claims, _signature] => (
-                Component::from_base64(header)?,
-                Component::from_base64(claims)?,
-            ),
-            _ => return Err(Error::Format),
-        };
-
-        Ok(Token {
-            raw: Some(raw.into()),
-            header,
-            claims,
-        })
-    }
-
-    /// Verify a from_base64d token with a key and a given hashing algorithm.
-    /// Make sure to check the token's algorithm before applying.
-    pub fn verify<D>(&self, key: &[u8], _digest: D) -> bool
-    where
-        D: Input
-            + BlockInput
-            + FixedOutput
-            + Reset
-            + Default
-            + Clone
-            + algorithm::rust_crypto::TypeLevelAlgorithmType,
-        D::BlockSize: ArrayLength<u8>,
-        D::OutputSize: ArrayLength<u8>,
-    {
-        self.raw
-            .as_ref()
-            .ok_or(Error::Format)
-            .and_then(|token| split_components(&*token))
-            .and_then(|[header, claims, signature]| {
-                // This will panic for bad key sizes. Returning an error
-                // would probably be better, but for now, I want to keep the
-                // API as stable as possible
-                let hmac = Hmac::<D>::new_varkey(key).unwrap();
-                VerifyingAlgorithm::verify(&hmac, &header, &claims, &signature)
-            })
-            .unwrap_or(false)
-    }
-
-    /// Generate the signed token from a key and a given hashing algorithm.
-    pub fn signed<D>(&self, key: &[u8], _digest: D) -> Result<String, Error>
-    where
-        D: Input
-            + BlockInput
-            + FixedOutput
-            + Reset
-            + Default
-            + Clone
-            + algorithm::rust_crypto::TypeLevelAlgorithmType,
-        D::BlockSize: ArrayLength<u8>,
-        D::OutputSize: ArrayLength<u8>,
-    {
-        let data = [self.header.to_base64()?, self.claims.to_base64()?].join(SEPARATOR);
-
-        // This will panic for bad key sizes. Returning an error
-        // would probably be better, but for now, I want to keep the
-        // API as stable as possible
-        let hmac = Hmac::<D>::new_varkey(key).unwrap();
-        let mut components = data.split(SEPARATOR);
-        let header = components.next().unwrap();
-        let claims = components.next().unwrap();
-        let signature = SigningAlgorithm::sign(&hmac, header, claims).unwrap();
-
-        let signed_token = [data, signature].join(SEPARATOR);
-
-        Ok(signed_token)
     }
 }
 
-impl<H, C> PartialEq for Token<H, C>
-where
-    H: Component + PartialEq,
-    C: Component + PartialEq,
-{
-    fn eq(&self, other: &Token<H, C>) -> bool {
-        self.header == other.header && self.claims == other.claims
+impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
+    fn into(self) -> (H, C) {
+        (self.header, self.claims)
     }
 }
 
@@ -165,43 +92,41 @@ impl<T: DeserializeOwned + Sized> FromBase64 for T {
     }
 }
 
-fn split_components(token: &str) -> Result<[&str; 3], Error> {
-    let mut components = token.split(SEPARATOR);
-    let header = components.next().ok_or(Error::Format)?;
-    let claims = components.next().ok_or(Error::Format)?;
-    let signature = components.next().ok_or(Error::Format)?;
-
-    Ok([header, claims, signature])
-}
-
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
-    use crate::claims::Claims;
     use crate::header::Header;
+    use crate::token::signed::SignWithKey;
+    use crate::token::verified::VerifyWithKey;
+    use crate::Claims;
     use crate::Token;
-    use digest::Digest;
+    use hmac::Hmac;
+    use hmac::Mac;
     use sha2::Sha256;
 
     #[test]
     pub fn raw_data() {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token = Token::<Header, Claims>::parse(raw).unwrap();
+        let token: Token<Header, Claims, _> = Token::parse_unverified(raw).unwrap();
 
-        {
-            assert_eq!(token.header.algorithm, Hs256);
-        }
-        assert!(token.verify("secret".as_bytes(), Sha256::new()));
+        assert_eq!(token.header.algorithm, Hs256);
+
+        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        assert!(token.verify_with_key(&verifier).is_ok());
     }
 
     #[test]
     pub fn roundtrip() {
-        let token: Token<Header, Claims> = Default::default();
-        let key = "secret".as_bytes();
-        let raw = token.signed(key, Sha256::new()).unwrap();
-        let same = Token::parse(&*raw).unwrap();
+        let token: Token<Header, Claims, _> = Default::default();
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        let signed_token = token.sign_with_key(&key).unwrap();
+        let signed_token_str = signed_token.as_str();
 
-        assert_eq!(token, same);
-        assert!(same.verify(key, Sha256::new()));
+        let recreated_token: Token<Header, Claims, _> =
+            Token::parse_unverified(signed_token_str).unwrap();
+
+        assert_eq!(signed_token.header(), recreated_token.header());
+        assert_eq!(signed_token.claims(), recreated_token.claims());
+        assert!(recreated_token.verify_with_key(&key).is_ok());
     }
 }
