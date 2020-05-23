@@ -3,7 +3,7 @@ extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{Header, RegisteredClaims, SignWithKey, Token, VerifyWithKey};
+use jwt::{RegisteredClaims, SignWithKey, VerifyWithKey};
 use sha2::Sha256;
 use std::default::Default;
 
@@ -13,19 +13,15 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
         return Err("Wrong password");
     }
 
-    let header: Header = Default::default();
     let claims = RegisteredClaims {
         issuer: Some("mikkyang.com".into()),
         subject: Some(user_id.into()),
         ..Default::default()
     };
-    let unsigned_token = Token::new(header, claims);
 
     let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
 
-    let signed_token = unsigned_token
-        .sign_with_key(&key)
-        .map_err(|_e| "Sign failed")?;
+    let signed_token = claims.sign_with_key(&key).map_err(|_e| "Sign failed")?;
 
     Ok(signed_token.into())
 }
