@@ -1,6 +1,6 @@
 use crate::algorithm::SigningAlgorithm;
 use crate::error::Error;
-use crate::header::Header;
+use crate::header::{Header, JoseHeader};
 use crate::signature::{Signed, Unsigned};
 use crate::{ToBase64, Token, SEPARATOR};
 
@@ -50,10 +50,16 @@ impl<C: ToBase64> SignWithKey<String> for C {
 
 impl<H, C> SignWithKey<Token<H, C, Signed>> for Token<H, C, Unsigned>
 where
-    H: ToBase64,
+    H: ToBase64 + JoseHeader,
     C: ToBase64,
 {
     fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
+        let header_algorithm = self.header.algorithm_type();
+        let key_algorithm = key.algorithm_type();
+        if header_algorithm != key_algorithm {
+            return Err(Error::AlgorithmMismatch(header_algorithm, key_algorithm));
+        }
+
         let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
         let signature = key.sign(&header, &claims)?;
