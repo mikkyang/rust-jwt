@@ -20,7 +20,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[cfg(openssl)]
+#[cfg(feature = "openssl")]
 pub use crate::algorithm::openssl::PKeyWithDigest;
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
