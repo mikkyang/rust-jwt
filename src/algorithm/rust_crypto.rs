@@ -1,3 +1,7 @@
+//! RustCrypto implementations of signing and verifying algorithms.
+//! According to that organization, only hmac is safely implemented at the
+//! moment.
+
 use base64;
 use crypto_mac::Mac;
 use digest::generic_array::ArrayLength;

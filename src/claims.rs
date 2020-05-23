@@ -1,6 +1,11 @@
+//! Convenience structs for commonly defined fields in claims.
+
 use serde_json;
 use std::collections::BTreeMap;
 
+
+/// Generic [JWT claims](https://tools.ietf.org/html/rfc7519#page-8) with
+/// defined fields for registered and private claims.
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     #[serde(flatten)]
@@ -20,6 +25,8 @@ impl Claims {
 
 pub type SecondsSinceEpoch = u64;
 
+/// Registered claims according to the
+/// [JWT specification](https://tools.ietf.org/html/rfc7519#page-9).
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct RegisteredClaims {
     #[serde(rename = "iss", skip_serializing_if = "Option::is_none")]

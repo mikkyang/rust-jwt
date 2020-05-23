@@ -4,11 +4,13 @@ use crate::header::{Header, JoseHeader};
 use crate::token::{Signed, Unsigned};
 use crate::{ToBase64, Token, SEPARATOR};
 
+/// Allow objects to be signed with a key.
 pub trait SignWithKey<T> {
     fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<T, Error>;
 }
 
 impl<H, C> Token<H, C, Unsigned> {
+    /// Create a new unsigned token, with mutable headers and claims.
     pub fn new(header: H, claims: C) -> Self {
         Token {
             header,
@@ -75,6 +77,7 @@ where
 }
 
 impl<'a, H, C> Token<H, C, Signed> {
+    /// Get the string representation of the token.
     pub fn as_str(&self) -> &str {
         &self.signature.token_string
     }

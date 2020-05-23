@@ -52,6 +52,7 @@ impl<'a, C: FromBase64> VerifyWithKey<C> for &'a str {
 }
 
 impl<'a, H: FromBase64, C: FromBase64> Token<H, C, Unverified<'a>> {
+    /// Not recommended. Parse the header and claims without checking the validity of the signature.
     pub fn parse_unverified(token_str: &str) -> Result<Token<H, C, Unverified>, Error> {
         let [header_str, claims_str, signature_str] = split_components(token_str)?;
         let header = H::from_base64(header_str)?;
