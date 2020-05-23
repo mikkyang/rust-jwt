@@ -4,10 +4,8 @@ use crate::header::Header;
 use crate::signature::{Signed, Unsigned};
 use crate::{ToBase64, Token, SEPARATOR};
 
-pub trait SignWithKey {
-    type Output;
-
-    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Self::Output, Error>;
+pub trait SignWithKey<T> {
+    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<T, Error>;
 }
 
 impl<H, C> Token<H, C, Unsigned> {
@@ -38,10 +36,8 @@ where
     }
 }
 
-impl<C: ToBase64> SignWithKey for C {
-    type Output = String;
-
-    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Self::Output, Error> {
+impl<C: ToBase64> SignWithKey<String> for C {
+    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<String, Error> {
         let header = Header {
             algorithm: key.algorithm_type(),
             ..Default::default()
@@ -52,14 +48,12 @@ impl<C: ToBase64> SignWithKey for C {
     }
 }
 
-impl<H, C> SignWithKey for Token<H, C, Unsigned>
+impl<H, C> SignWithKey<Token<H, C, Signed>> for Token<H, C, Unsigned>
 where
     H: ToBase64,
     C: ToBase64,
 {
-    type Output = Token<H, C, Signed>;
-
-    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Self::Output, Error> {
+    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
         let header = self.header.to_base64()?;
         let claims = self.claims.to_base64()?;
         let signature = key.sign(&header, &claims)?;
