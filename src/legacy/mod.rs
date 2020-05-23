@@ -1,3 +1,5 @@
+//! Legacy support.
+
 use crate::algorithm::{self, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
 use crate::token::verified::split_components;
