@@ -1,6 +1,6 @@
 use crate::algorithm::VerifyingAlgorithm;
 use crate::error::Error;
-use crate::header::Header;
+use crate::header::{Header, JoseHeader};
 use crate::signature::{Unverified, Verified};
 use crate::{FromBase64, Token, SEPARATOR};
 
@@ -8,8 +8,15 @@ pub trait VerifyWithKey<T> {
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<T, Error>;
 }
 
-impl<'a, H, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, Unverified<'a>> {
+impl<'a, H: JoseHeader, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, Unverified<'a>> {
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<Token<H, C, Verified>, Error> {
+        let header = self.header() as &dyn JoseHeader;
+        let header_algorithm = header.algorithm_type();
+        let key_algorithm = key.algorithm_type();
+        if header_algorithm != key_algorithm {
+            return Err(Error::AlgorithmMismatch(header_algorithm, key_algorithm));
+        }
+
         let Unverified {
             header_str,
             claims_str,
@@ -26,7 +33,11 @@ impl<'a, H, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, Unverified<'
     }
 }
 
-impl<'a, H: FromBase64, C: FromBase64> VerifyWithKey<Token<H, C, Verified>> for &'a str {
+impl<'a, H, C> VerifyWithKey<Token<H, C, Verified>> for &'a str
+where
+    H: FromBase64 + JoseHeader,
+    C: FromBase64,
+{
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<Token<H, C, Verified>, Error> {
         let unverified = Token::parse_unverified(self)?;
         unverified.verify_with_key(key)
@@ -35,9 +46,8 @@ impl<'a, H: FromBase64, C: FromBase64> VerifyWithKey<Token<H, C, Verified>> for 
 
 impl<'a, C: FromBase64> VerifyWithKey<C> for &'a str {
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<C, Error> {
-        let unverified: Token<Header, C, _> = Token::parse_unverified(self)?;
-        let verified = unverified.verify_with_key(key)?;
-        Ok(verified.claims)
+        let token: Token<Header, C, _> = VerifyWithKey::verify_with_key(self, key)?;
+        Ok(token.claims)
     }
 }
 
