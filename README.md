@@ -95,9 +95,3 @@ let token = Token::new(header, claims).sign_with_key(&key).unwrap();
 
 assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_");
 ```
-
-
-The library provides a `Token` type that wraps a header and claims. The header
-and claims can be any types that implement the `Component` trait, which is
-automatically implemented for types that implement the `Sized`, `Encodable`,
-and `Decodable` traits. See the examples.
