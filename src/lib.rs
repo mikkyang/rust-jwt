@@ -137,7 +137,8 @@ mod tests {
         let signed_token = token.sign_with_key(&key).unwrap();
         let signed_token_str = signed_token.as_str();
 
-        let recreated_token: Token<Header, Claims, _> = Token::parse_unverified(signed_token_str).unwrap();
+        let recreated_token: Token<Header, Claims, _> =
+            Token::parse_unverified(signed_token_str).unwrap();
 
         assert_eq!(signed_token.header(), recreated_token.header());
         assert_eq!(signed_token.claims(), recreated_token.claims());
