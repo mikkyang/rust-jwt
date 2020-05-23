@@ -16,8 +16,10 @@ A JSON Web Token library.
 If you don't care about that header as long as the header is verified, signing
 and verification can be done with just a few traits.
 
-
 #### Signing
+
+Claims can be any `serde::Serializable` type, usually derived with
+`serde_derive`.
 
 ```rust
 extern crate hmac;
@@ -25,14 +27,13 @@ extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{RegisteredClaims, SignWithKey};
+use jwt::SignWithKey;
 use sha2::Sha256;
+use std::collections::BTreeMap;
 
 let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
-let claims = RegisteredClaims {
-    subject: Some(String::from("someone")),
-    ..Default::default()
-};
+let mut claims = BTreeMap::new();
+claims.insert("sub", "someone");
 
 let token_str = claims.sign_with_key(&key).unwrap();
 
@@ -41,21 +42,25 @@ assert_eq!(token_str, "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vf
 
 #### Verification
 
+Claims can be any `serde::de::DeserializeOwned` type, usually derived with
+`serde_derive`.
+
 ```rust
 extern crate hmac;
 extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{RegisteredClaims, VerifyWithKey};
+use jwt::VerifyWithKey;
 use sha2::Sha256;
+use std::collections::BTreeMap;
 
 let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
 let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
 
-let claims: RegisteredClaims = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
 
-assert_eq!(claims.subject.unwrap(), "someone");
+assert_eq!(claims["sub"], "someone");
 ```
 
 The library provides a `Token` type that wraps a header and claims. The header
