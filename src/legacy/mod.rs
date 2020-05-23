@@ -13,6 +13,7 @@ pub use crate::legacy::header::Header;
 pub mod claims;
 pub mod header;
 
+#[deprecated(note = "Please use jwt::Token instead")]
 #[derive(Debug, Default)]
 pub struct Token<H, C>
 where
@@ -123,6 +124,7 @@ where
     }
 }
 
+#[deprecated(note = "This is usually implemented through a blanket impl, but if needed use the ToBase64 and FromBase64 traits")]
 pub trait Component: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
