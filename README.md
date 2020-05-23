@@ -95,3 +95,28 @@ let token = Token::new(header, claims).sign_with_key(&key).unwrap();
 
 assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_");
 ```
+
+#### Verification
+
+Both header and claims have to implement `serde::de::DeserializeOwned`.
+
+```rust
+extern crate hmac;
+extern crate jwt;
+extern crate sha2;
+
+use hmac::{Hmac, Mac};
+use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
+use sha2::Sha384;
+use std::collections::BTreeMap;
+
+let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+let token_str = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_";
+
+let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+let header = token.header();
+let claims = token.claims();
+
+assert_eq!(header.algorithm, AlgorithmType::Hs384);
+assert_eq!(claims["sub"], "someone");
+```
