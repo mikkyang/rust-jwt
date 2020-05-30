@@ -55,7 +55,7 @@ impl<'a, H: JoseHeader, C> VerifyWithStore<Token<H, C, Verified>> for Token<H, C
             .get(key_id)
             .ok_or_else(|| Error::NoKeyWithKeyId(key_id.to_owned()))?;
 
-        VerifyWithKey::verify_with_key(self, key)
+        self.verify_with_key(key)
     }
 }
 
@@ -87,7 +87,7 @@ where
 
 impl<'a, C: FromBase64> VerifyWithKey<C> for &'a str {
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<C, Error> {
-        let token: Token<Header, C, _> = VerifyWithKey::verify_with_key(self, key)?;
+        let token: Token<Header, C, _> = self.verify_with_key(key)?;
         Ok(token.claims)
     }
 }
@@ -98,7 +98,7 @@ impl<'a, C: FromBase64> VerifyWithStore<C> for &'a str {
         S: Store<Algorithm = A>,
         A: VerifyingAlgorithm,
     {
-        let token: Token<Header, C, _> = VerifyWithStore::verify_with_store(self, store)?;
+        let token: Token<Header, C, _> = self.verify_with_store(store)?;
         Ok(token.claims)
     }
 }
