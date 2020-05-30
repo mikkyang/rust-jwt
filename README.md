@@ -139,15 +139,12 @@ extern crate sha2;
 
 use hmac::{Hmac, Mac};
 use jwt::{SigningAlgorithm, SignWithStore, Store};
-use sha2::{Sha256, Sha512};
+use sha2::Sha512;
 use std::collections::BTreeMap;
 
-let mut store = BTreeMap::new();
-let key1: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
-let key2: Hmac<Sha512> = Hmac::new_varkey(b"second").unwrap();
-// If you will have multiple types of keys, they will need to be boxed into trait objects
-store.insert("first_key", Box::new(key1) as Box<dyn SigningAlgorithm>);
-store.insert("second_key", Box::new(key2) as Box<dyn SigningAlgorithm>);
+let mut store: BTreeMap<_, Hmac<Sha512>> = BTreeMap::new();
+store.insert("first_key", Hmac::new_varkey(b"first").unwrap());
+store.insert("second_key", Hmac::new_varkey(b"second").unwrap());
 
 let mut claims = BTreeMap::new();
 claims.insert("sub", "someone");
