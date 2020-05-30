@@ -106,6 +106,24 @@ where
     }
 }
 
+impl<H, C> SignWithStore<Token<H, C, Signed>> for Token<H, C, Unsigned>
+where
+    H: ToBase64 + JoseHeader,
+    C: ToBase64,
+{
+    fn sign_with_store<S, A>(self, store: &S) -> Result<Token<H, C, Signed>, Error>
+    where
+        S: Store<Algorithm = A>,
+        A: SigningAlgorithm,
+    {
+        let key_id = self.header.key_id().ok_or(Error::NoKeyId)?;
+        let key = store
+            .get(key_id)
+            .ok_or_else(|| Error::NoKeyWithKeyId(key_id.to_owned()))?;
+        self.sign_with_key(key)
+    }
+}
+
 impl<'a, H, C> Token<H, C, Signed> {
     /// Get the string representation of the token.
     pub fn as_str(&self) -> &str {
@@ -121,8 +139,10 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::SigningAlgorithm;
+    use crate::algorithm::AlgorithmType;
+    use crate::header::Header;
     use crate::token::signed::{SignWithKey, SignWithStore};
+    use crate::Token;
     use hmac::{Hmac, Mac};
     use sha2::{Sha256, Sha512};
     use std::collections::BTreeMap;
@@ -143,17 +163,22 @@ mod tests {
     }
 
     #[test]
-    pub fn sign_claims_with_store() {
+    pub fn sign_unsigned_with_store() {
         let mut key_store = BTreeMap::new();
         let key1: Hmac<Sha512> = Hmac::new_varkey(b"first").unwrap();
         let key2: Hmac<Sha512> = Hmac::new_varkey(b"second").unwrap();
         key_store.insert("first_key".to_owned(), key1);
         key_store.insert("second_key".to_owned(), key2);
 
+        let header = Header {
+            algorithm: AlgorithmType::Hs512,
+            key_id: Some(String::from("second_key")),
+            ..Default::default()
+        };
         let claims = Claims { name: "Jane Doe" };
+        let token = Token::new(header, claims);
+        let signed_token = token.sign_with_store(&key_store).unwrap();
 
-        let signed_token = ("second_key", &claims).sign_with_store(&key_store).unwrap();
-
-        assert_eq!(signed_token, "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A");
+        assert_eq!(signed_token.as_str(), "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A");
     }
 }
