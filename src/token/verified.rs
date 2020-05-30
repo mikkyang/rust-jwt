@@ -43,6 +43,20 @@ impl<'a, H: JoseHeader, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, 
     }
 }
 
+impl<'a, H: JoseHeader, C> VerifyWithStore<Token<H, C, Verified>> for Token<H, C, Unverified<'a>> {
+    fn verify_with_store<S, A>(self, store: &S) -> Result<Token<H, C, Verified>, Error>
+    where
+        S: Store<Algorithm = A>,
+        A: VerifyingAlgorithm,
+    {
+        let header = self.header() as &dyn JoseHeader;
+        let key_id = header.key_id().ok_or(Error::StoreMissingKey)?;
+        let key = store.get(key_id).ok_or(Error::StoreMissingKey)?;
+
+        VerifyWithKey::verify_with_key(self, key)
+    }
+}
+
 impl<'a, H, C> VerifyWithKey<Token<H, C, Verified>> for &'a str
 where
     H: FromBase64 + JoseHeader,
@@ -65,11 +79,7 @@ where
         A: VerifyingAlgorithm,
     {
         let unverified: Token<H, C, _> = Token::parse_unverified(self)?;
-        let header = unverified.header() as &dyn JoseHeader;
-        let key_id = header.key_id().ok_or(Error::StoreMissingKey)?;
-        let key = store.get(key_id).ok_or(Error::StoreMissingKey)?;
-
-        unverified.verify_with_key(key)
+        unverified.verify_with_store(store)
     }
 }
 
