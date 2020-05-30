@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Claims","JWT Claims. Registered claims are directly accessible via the `Registered` struct embedded, while private claims are a map keyed by claim names with values of type Value from serde_json."],["Registered",""]]});

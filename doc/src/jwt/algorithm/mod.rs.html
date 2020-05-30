@@ -65,6 +65,28 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Algorithms capable of signing and verifying tokens. By default only the</span>
 <span class="doccomment">//! `hmac` crate&#39;s `Hmac` type is supported. For more algorithms, enable the</span>
@@ -86,6 +108,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;openssl&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">openssl</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">rust_crypto</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">store</span>;
 
 <span class="doccomment">/// The type of an algorithm, corresponding to the</span>
 <span class="doccomment">/// [JWA](https://tools.ietf.org/html/rfc7518) specification.</span>
@@ -131,6 +154,27 @@
     <span class="kw">fn</span> <span class="ident">verify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">claims</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">signature</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">signature_bytes</span> <span class="op">=</span> <span class="ident">base64</span>::<span class="ident">decode_config</span>(<span class="ident">signature</span>, <span class="ident">base64</span>::<span class="ident">URL_SAFE_NO_PAD</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">verify_bytes</span>(<span class="ident">header</span>, <span class="ident">claims</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">signature_bytes</span>)
+    }
+}
+
+<span class="comment">// TODO: investigate if these AsRef impls are necessary</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">VerifyingAlgorithm</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">VerifyingAlgorithm</span> <span class="kw">for</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">algorithm_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span> {
+        <span class="self">self</span>.<span class="ident">as_ref</span>().<span class="ident">algorithm_type</span>()
+    }
+
+    <span class="kw">fn</span> <span class="ident">verify_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">claims</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">signature</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">as_ref</span>().<span class="ident">verify_bytes</span>(<span class="ident">header</span>, <span class="ident">claims</span>, <span class="ident">signature</span>)
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">SigningAlgorithm</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">SigningAlgorithm</span> <span class="kw">for</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">algorithm_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span> {
+        <span class="self">self</span>.<span class="ident">as_ref</span>().<span class="ident">algorithm_type</span>()
+    }
+
+    <span class="kw">fn</span> <span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">claims</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">as_ref</span>().<span class="ident">sign</span>(<span class="ident">header</span>, <span class="ident">claims</span>)
     }
 }
 </pre></div>

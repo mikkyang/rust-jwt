@@ -50,6 +50,10 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::<span class="ident">AlgorithmType</span>;
 <span class="kw">use</span> <span class="ident">base64</span>::<span class="ident">DecodeError</span>;
@@ -61,6 +65,8 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
     <span class="ident">AlgorithmMismatch</span>(<span class="ident">AlgorithmType</span>, <span class="ident">AlgorithmType</span>),
+    <span class="ident">NoKeyId</span>,
+    <span class="ident">NoKeyWithKeyId</span>(<span class="ident">String</span>),
     <span class="ident">Format</span>,
     <span class="ident">Base64</span>(<span class="ident">DecodeError</span>),
     <span class="ident">Json</span>(<span class="ident">JsonError</span>),
@@ -76,6 +82,8 @@
             <span class="ident">Error</span>::<span class="ident">AlgorithmMismatch</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Expected algorithm type {:?} but found {:?}&quot;</span>, <span class="ident">a</span>, <span class="ident">b</span>)
             }
+            <span class="ident">Error</span>::<span class="ident">NoKeyId</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;No key id found&quot;</span>),
+            <span class="ident">Error</span>::<span class="ident">NoKeyWithKeyId</span>(<span class="kw-2">ref</span> <span class="ident">kid</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Key with key id {} not found&quot;</span>, <span class="ident">kid</span>),
             <span class="ident">Error</span>::<span class="ident">Format</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Format&quot;</span>),
             <span class="ident">Error</span>::<span class="ident">Base64</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),
             <span class="ident">Error</span>::<span class="ident">Json</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),

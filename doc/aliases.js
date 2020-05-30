@@ -12,7 +12,6 @@ ALIASES["fake_simd"] = {};
 ALIASES["foreign_types"] = {};
 ALIASES["foreign_types_shared"] = {};
 ALIASES["generic_array"] = {};
-ALIASES["hex"] = {};
 ALIASES["hmac"] = {};
 ALIASES["itoa"] = {};
 ALIASES["jwt"] = {};

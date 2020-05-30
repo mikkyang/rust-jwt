@@ -233,7 +233,6 @@
 <span id="233">233</span>
 <span id="234">234</span>
 <span id="235">235</span>
-<span id="236">236</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Note, for legacy support (not recommended), import from</span>
 <span class="doccomment">//! [`jwt::legacy`](legacy/index.html) instead of directly from `jwt`.</span>
@@ -321,7 +320,6 @@
 <span class="doccomment">//! assert_eq!(claims[&quot;sub&quot;], &quot;someone&quot;);</span>
 <span class="doccomment">//! ```</span>
 
-
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">base64</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto_mac</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">digest</span>;
@@ -346,14 +344,15 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;openssl&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::<span class="ident">openssl</span>::<span class="ident">PKeyWithDigest</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::<span class="ident">store</span>::<span class="ident">Store</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::{<span class="ident">AlgorithmType</span>, <span class="ident">SigningAlgorithm</span>, <span class="ident">VerifyingAlgorithm</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">claims</span>::<span class="ident">Claims</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">claims</span>::<span class="ident">RegisteredClaims</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">header</span>::{<span class="ident">Header</span>, <span class="ident">JoseHeader</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">token</span>::<span class="ident">signed</span>::{<span class="ident">SignWithKey</span>, <span class="ident">SignWithStore</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">token</span>::<span class="ident">verified</span>::{<span class="ident">VerifyWithKey</span>, <span class="ident">VerifyWithStore</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">token</span>::{<span class="ident">Unsigned</span>, <span class="ident">Unverified</span>, <span class="ident">Verified</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">token</span>::<span class="ident">signed</span>::<span class="ident">SignWithKey</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">token</span>::<span class="ident">verified</span>::<span class="ident">VerifyWithKey</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">algorithm</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">claims</span>;
@@ -414,7 +413,6 @@
         <span class="prelude-val">Ok</span>(<span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">encoded_json_bytes</span>))
     }
 }
-
 
 <span class="doccomment">/// A trait used to parse objects from base64 encoding. The return type can</span>
 <span class="doccomment">/// be either owned if the header is dynamic, or it can be borrowed if the</span>

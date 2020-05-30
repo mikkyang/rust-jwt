@@ -173,6 +173,16 @@
 <span id="173">173</span>
 <span id="174">174</span>
 <span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! OpenSSL support through the openssl crate.</span>
 <span class="doccomment">//! Note that private keys can only be used for signing and that public keys</span>
@@ -215,7 +225,11 @@
     <span class="kw">fn</span> <span class="ident">algorithm_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span> {
         <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">key</span>.<span class="ident">id</span>(), <span class="self">self</span>.<span class="ident">digest</span>.<span class="ident">type_</span>()) {
             (<span class="ident">Id</span>::<span class="ident">RSA</span>, <span class="ident">Nid</span>::<span class="ident">SHA256</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span>::<span class="ident">Rs256</span>,
+            (<span class="ident">Id</span>::<span class="ident">RSA</span>, <span class="ident">Nid</span>::<span class="ident">SHA384</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span>::<span class="ident">Rs384</span>,
+            (<span class="ident">Id</span>::<span class="ident">RSA</span>, <span class="ident">Nid</span>::<span class="ident">SHA512</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span>::<span class="ident">Rs512</span>,
             (<span class="ident">Id</span>::<span class="ident">EC</span>, <span class="ident">Nid</span>::<span class="ident">SHA256</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span>::<span class="ident">Es256</span>,
+            (<span class="ident">Id</span>::<span class="ident">EC</span>, <span class="ident">Nid</span>::<span class="ident">SHA384</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span>::<span class="ident">Es384</span>,
+            (<span class="ident">Id</span>::<span class="ident">EC</span>, <span class="ident">Nid</span>::<span class="ident">SHA512</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">AlgorithmType</span>::<span class="ident">Es512</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Invalid algorithm type&quot;</span>),
         }
     }
@@ -284,21 +298,19 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::<span class="ident">openssl</span>::<span class="ident">PKeyWithDigest</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::<span class="ident">AlgorithmType</span>::{<span class="self">self</span>, <span class="kw-2">*</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::{<span class="ident">SigningAlgorithm</span>, <span class="ident">VerifyingAlgorithm</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">header</span>::<span class="ident">PrecomputedAlgorithmOnlyHeader</span> <span class="kw">as</span> <span class="ident">AlgOnly</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">ToBase64</span>;
     <span class="kw">use</span> <span class="ident">openssl</span>::<span class="ident">hash</span>::<span class="ident">MessageDigest</span>;
     <span class="kw">use</span> <span class="ident">openssl</span>::<span class="ident">pkey</span>::<span class="ident">PKey</span>;
 
-    <span class="comment">// {&quot;alg&quot;:&quot;RS256&quot;,&quot;typ&quot;:&quot;JWT&quot;}</span>
-    <span class="kw">const</span> <span class="ident">RS256_HEADER</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9&quot;</span>;
-    <span class="comment">// {&quot;alg&quot;:&quot;ES256&quot;,&quot;typ&quot;:&quot;JWT&quot;}</span>
-    <span class="kw">const</span> <span class="ident">ES256_HEADER</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9&quot;</span>;
     <span class="comment">// {&quot;sub&quot;:&quot;1234567890&quot;,&quot;name&quot;:&quot;John Doe&quot;,&quot;admin&quot;:true}</span>
     <span class="kw">const</span> <span class="ident">CLAIMS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span>
         <span class="string">&quot;eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9&quot;</span>;
 
     <span class="kw">const</span> <span class="ident">RS256_SIGNATURE</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span>
-    <span class="string">&quot;EkN-DOsnsuRjRO6BxXemmJDm3HbxrbRzXglbN2S4sOkopdU4IsDxTI8jO19W_A4K8ZPJijNLis4EZsHeY559a4DFOd50_OqgHGuERTqYZyuhtF39y\
-    xJPAjUESwxk2J5k_4zM3O-vtd1Ghyo4IbqKKSy6J9mTniYJPenn5-HIirE&quot;</span>;
+    <span class="string">&quot;cQsAHF2jHvPGFP5zTD8BgoJrnzEx6JNQCpupebWLFnOc2r_punDDTylI6Ia4JZNkvy2dQP-7W-DEbFQ3oaarHsDndqUgwf9iYlDQxz4Rr2nEZX1FX0-FMEgFPeQpdwveCgjtTYUbVy37ijUySN_rW-xZTrsh_Ug-ica8t-zHRIw&quot;</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">rs256_sign</span>() {
@@ -309,7 +321,9 @@
             <span class="ident">key</span>: <span class="ident">PKey</span>::<span class="ident">private_key_from_pem</span>(<span class="ident">pem</span>).<span class="ident">unwrap</span>(),
         };
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">algorithm</span>.<span class="ident">sign</span>(<span class="ident">RS256_HEADER</span>, <span class="ident">CLAIMS</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">algorithm</span>
+            .<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="ident">AlgOnly</span>(<span class="ident">Rs256</span>).<span class="ident">to_base64</span>().<span class="ident">unwrap</span>(), <span class="ident">CLAIMS</span>)
+            .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>, <span class="ident">RS256_SIGNATURE</span>);
     }
 
@@ -323,7 +337,11 @@
         };
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">algorithm</span>
-            .<span class="ident">verify</span>(<span class="ident">RS256_HEADER</span>, <span class="ident">CLAIMS</span>, <span class="ident">RS256_SIGNATURE</span>)
+            .<span class="ident">verify</span>(
+                <span class="kw-2">&amp;</span><span class="ident">AlgOnly</span>(<span class="ident">Rs256</span>).<span class="ident">to_base64</span>().<span class="ident">unwrap</span>(),
+                <span class="ident">CLAIMS</span>,
+                <span class="ident">RS256_SIGNATURE</span>
+            )
             .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>));
     }
 
@@ -335,7 +353,9 @@
             <span class="ident">key</span>: <span class="ident">PKey</span>::<span class="ident">private_key_from_pem</span>(<span class="ident">private_pem</span>).<span class="ident">unwrap</span>(),
         };
 
-        <span class="kw">let</span> <span class="ident">signature</span> <span class="op">=</span> <span class="ident">private_key</span>.<span class="ident">sign</span>(<span class="ident">ES256_HEADER</span>, <span class="ident">CLAIMS</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">signature</span> <span class="op">=</span> <span class="ident">private_key</span>
+            .<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="ident">AlgOnly</span>(<span class="ident">Es256</span>).<span class="ident">to_base64</span>().<span class="ident">unwrap</span>(), <span class="ident">CLAIMS</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">public_pem</span> <span class="op">=</span> <span class="macro">include_bytes</span><span class="macro">!</span>(<span class="string">&quot;../../test/es256-public.pem&quot;</span>);
 
@@ -345,7 +365,7 @@
         };
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">public_key</span>
-            .<span class="ident">verify</span>(<span class="ident">ES256_HEADER</span>, <span class="ident">CLAIMS</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">signature</span>)
+            .<span class="ident">verify</span>(<span class="kw-2">&amp;</span><span class="ident">AlgOnly</span>(<span class="ident">Es256</span>).<span class="ident">to_base64</span>().<span class="ident">unwrap</span>(), <span class="ident">CLAIMS</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">signature</span>)
             .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>));
     }
 }
