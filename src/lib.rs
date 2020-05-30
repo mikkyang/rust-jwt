@@ -16,11 +16,16 @@
 //! use sha2::Sha256;
 //! use std::collections::BTreeMap;
 //!
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
 //! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
 //! let mut claims = BTreeMap::new();
 //! claims.insert("sub", "someone");
 //! let token_str = claims.sign_with_key(&key).unwrap();
 //! assert_eq!(token_str, "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 //! #### Verification
 //! Claims can be any `serde::de::DeserializeOwned` type, usually derived with
@@ -34,10 +39,15 @@
 //! use sha2::Sha256;
 //! use std::collections::BTreeMap;
 //!
-//! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
+//! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
-//! let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+//! let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key)?;
 //! assert_eq!(claims["sub"], "someone");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 //! ### Header and Claims
 //! If you need to customize the header, you can use the `Token` struct. For
@@ -54,15 +64,20 @@
 //! use sha2::Sha384;
 //! use std::collections::BTreeMap;
 //!
-//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
+//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
 //! let header = Header {
 //!     algorithm: AlgorithmType::Hs384,
 //!     ..Default::default()
 //! };
 //! let mut claims = BTreeMap::new();
 //! claims.insert("sub", "someone");
-//! let token = Token::new(header, claims).sign_with_key(&key).unwrap();
+//! let token = Token::new(header, claims).sign_with_key(&key)?;
 //! assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 //! #### Verification
 //! Both header and claims have to implement `serde::de::DeserializeOwned`.
@@ -75,13 +90,18 @@
 //! use sha2::Sha384;
 //! use std::collections::BTreeMap;
 //!
-//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
+//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_";
-//! let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+//! let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key)?;
 //! let header = token.header();
 //! let claims = token.claims();
 //! assert_eq!(header.algorithm, AlgorithmType::Hs384);
 //! assert_eq!(claims["sub"], "someone");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 
 extern crate base64;
