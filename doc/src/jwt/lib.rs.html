@@ -277,10 +277,10 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # use jwt::Error;</span>
 <span class="doccomment">//! # fn try_main() -&gt; Result&lt;(), Error&gt; {</span>
-<span class="doccomment">//! let key: Hmac&lt;Sha256&gt; = Hmac::new_varkey(b&quot;some-secret&quot;).unwrap();</span>
+<span class="doccomment">//! let key: Hmac&lt;Sha256&gt; = Hmac::new_varkey(b&quot;some-secret&quot;)?;</span>
 <span class="doccomment">//! let mut claims = BTreeMap::new();</span>
 <span class="doccomment">//! claims.insert(&quot;sub&quot;, &quot;someone&quot;);</span>
-<span class="doccomment">//! let token_str = claims.sign_with_key(&amp;key).unwrap();</span>
+<span class="doccomment">//! let token_str = claims.sign_with_key(&amp;key)?;</span>
 <span class="doccomment">//! assert_eq!(token_str, &quot;eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0&quot;);</span>
 <span class="doccomment">//! # Ok(())</span>
 <span class="doccomment">//! # }</span>
@@ -302,7 +302,7 @@
 <span class="doccomment">//! # fn try_main() -&gt; Result&lt;(), Error&gt; {</span>
 <span class="doccomment">//! let key: Hmac&lt;Sha256&gt; = Hmac::new_varkey(b&quot;some-secret&quot;)?;</span>
 <span class="doccomment">//! let token_str = &quot;eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0&quot;;</span>
-<span class="doccomment">//! let claims: BTreeMap&lt;String, String&gt; = VerifyWithKey::verify_with_key(token_str, &amp;key)?;</span>
+<span class="doccomment">//! let claims: BTreeMap&lt;String, String&gt; = token_str.verify_with_key(&amp;key)?;</span>
 <span class="doccomment">//! assert_eq!(claims[&quot;sub&quot;], &quot;someone&quot;);</span>
 <span class="doccomment">//! # Ok(())</span>
 <span class="doccomment">//! # }</span>
@@ -353,7 +353,7 @@
 <span class="doccomment">//! # fn try_main() -&gt; Result&lt;(), Error&gt; {</span>
 <span class="doccomment">//! let key: Hmac&lt;Sha384&gt; = Hmac::new_varkey(b&quot;some-secret&quot;)?;</span>
 <span class="doccomment">//! let token_str = &quot;eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_&quot;;</span>
-<span class="doccomment">//! let token: Token&lt;Header, BTreeMap&lt;String, String&gt;, _&gt; = VerifyWithKey::verify_with_key(token_str, &amp;key)?;</span>
+<span class="doccomment">//! let token: Token&lt;Header, BTreeMap&lt;String, String&gt;, _&gt; = token_str.verify_with_key(&amp;key)?;</span>
 <span class="doccomment">//! let header = token.header();</span>
 <span class="doccomment">//! let claims = token.claims();</span>
 <span class="doccomment">//! assert_eq!(header.algorithm, AlgorithmType::Hs384);</span>
