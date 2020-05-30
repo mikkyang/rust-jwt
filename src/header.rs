@@ -71,6 +71,8 @@ pub enum HeaderContentType {
     JsonWebToken,
 }
 
+/// A header that only contains the algorithm type. The `ToBase64`
+/// implementation uses static strings for faster serialization.
 pub struct PrecomputedAlgorithmOnlyHeader(pub AlgorithmType);
 
 impl JoseHeader for PrecomputedAlgorithmOnlyHeader {
