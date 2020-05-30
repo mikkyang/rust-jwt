@@ -142,7 +142,7 @@ extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{Header, SigningAlgorithm, SignWithStore, Store, Token, VerifyWithStore};
+use jwt::{Header, SignWithStore, Token, VerifyWithStore};
 use sha2::Sha512;
 use std::collections::BTreeMap;
 
