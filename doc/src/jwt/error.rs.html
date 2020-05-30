@@ -54,10 +54,13 @@
 <span id="54">54</span>
 <span id="55">55</span>
 <span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">algorithm</span>::<span class="ident">AlgorithmType</span>;
 <span class="kw">use</span> <span class="ident">base64</span>::<span class="ident">DecodeError</span>;
-<span class="kw">use</span> <span class="ident">crypto_mac</span>::<span class="ident">MacError</span>;
+<span class="kw">use</span> <span class="ident">crypto_mac</span>::{<span class="ident">InvalidKeyLength</span>, <span class="ident">MacError</span>};
 <span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">FromUtf8Error</span>;
@@ -72,6 +75,7 @@
     <span class="ident">Json</span>(<span class="ident">JsonError</span>),
     <span class="ident">Utf8</span>(<span class="ident">FromUtf8Error</span>),
     <span class="ident">RustCryptoMac</span>(<span class="ident">MacError</span>),
+    <span class="ident">RustCryptoMacKeyLength</span>(<span class="ident">InvalidKeyLength</span>),
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;openssl&quot;</span>)]</span>
     <span class="ident">OpenSsl</span>(<span class="ident">openssl</span>::<span class="ident">error</span>::<span class="ident">ErrorStack</span>),
 }
@@ -89,6 +93,7 @@
             <span class="ident">Error</span>::<span class="ident">Json</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),
             <span class="ident">Error</span>::<span class="ident">Utf8</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),
             <span class="ident">Error</span>::<span class="ident">RustCryptoMac</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),
+            <span class="ident">Error</span>::<span class="ident">RustCryptoMacKeyLength</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;openssl&quot;</span>)]</span>
             <span class="ident">Error</span>::<span class="ident">OpenSsl</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>),
         }
@@ -109,6 +114,7 @@
 <span class="macro">error_wrap</span><span class="macro">!</span>(<span class="ident">JsonError</span>, <span class="ident">Error</span>::<span class="ident">Json</span>);
 <span class="macro">error_wrap</span><span class="macro">!</span>(<span class="ident">FromUtf8Error</span>, <span class="ident">Error</span>::<span class="ident">Utf8</span>);
 <span class="macro">error_wrap</span><span class="macro">!</span>(<span class="ident">MacError</span>, <span class="ident">Error</span>::<span class="ident">RustCryptoMac</span>);
+<span class="macro">error_wrap</span><span class="macro">!</span>(<span class="ident">InvalidKeyLength</span>, <span class="ident">Error</span>::<span class="ident">RustCryptoMacKeyLength</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;openssl&quot;</span>)]</span>
 <span class="macro">error_wrap</span><span class="macro">!</span>(<span class="ident">openssl</span>::<span class="ident">error</span>::<span class="ident">ErrorStack</span>, <span class="ident">Error</span>::<span class="ident">OpenSsl</span>);
 </pre></div>
