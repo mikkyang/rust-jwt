@@ -4,6 +4,7 @@ use crate::header::{Header, JoseHeader};
 use crate::token::{Unverified, Verified};
 use crate::{FromBase64, Token, SEPARATOR};
 
+/// Allow objects to be verified with a key.
 pub trait VerifyWithKey<T> {
     fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<T, Error>;
 }
