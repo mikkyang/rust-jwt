@@ -18,6 +18,7 @@ use crate::error::Error;
 #[cfg(feature = "openssl")]
 pub mod openssl;
 pub mod rust_crypto;
+pub mod store;
 
 /// The type of an algorithm, corresponding to the
 /// [JWA](https://tools.ietf.org/html/rfc7518) specification.
