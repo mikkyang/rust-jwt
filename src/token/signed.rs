@@ -145,10 +145,10 @@ mod tests {
     #[test]
     pub fn sign_claims_with_store() {
         let mut key_store = BTreeMap::new();
-        let key1: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
+        let key1: Hmac<Sha512> = Hmac::new_varkey(b"first").unwrap();
         let key2: Hmac<Sha512> = Hmac::new_varkey(b"second").unwrap();
-        key_store.insert("first_key", Box::new(key1) as Box<dyn SigningAlgorithm>);
-        key_store.insert("second_key", Box::new(key2) as Box<dyn SigningAlgorithm>);
+        key_store.insert("first_key".to_owned(), key1);
+        key_store.insert("second_key".to_owned(), key2);
 
         let claims = Claims { name: "Jane Doe" };
 
