@@ -66,7 +66,9 @@ impl<'a, C: ToBase64> SignWithStore<String> for (&'a str, C) {
         A: SigningAlgorithm,
     {
         let (key_id, claims) = self;
-        let key = store.get(key_id).ok_or(Error::StoreMissingKey)?;
+        let key = store
+            .get(key_id)
+            .ok_or_else(|| Error::NoKeyWithKeyId(key_id.to_owned()))?;
 
         let header = BorrowedKeyHeader {
             algorithm: key.algorithm_type(),

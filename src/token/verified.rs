@@ -50,8 +50,10 @@ impl<'a, H: JoseHeader, C> VerifyWithStore<Token<H, C, Verified>> for Token<H, C
         A: VerifyingAlgorithm,
     {
         let header = self.header() as &dyn JoseHeader;
-        let key_id = header.key_id().ok_or(Error::StoreMissingKey)?;
-        let key = store.get(key_id).ok_or(Error::StoreMissingKey)?;
+        let key_id = header.key_id().ok_or(Error::NoKeyId)?;
+        let key = store
+            .get(key_id)
+            .ok_or_else(|| Error::NoKeyWithKeyId(key_id.to_owned()))?;
 
         VerifyWithKey::verify_with_key(self, key)
     }
