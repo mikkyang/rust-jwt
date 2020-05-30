@@ -1,3 +1,4 @@
+use crate::algorithm::store::Store;
 use crate::algorithm::SigningAlgorithm;
 use crate::error::Error;
 use crate::header::{Header, JoseHeader};
@@ -7,6 +8,14 @@ use crate::{ToBase64, Token, SEPARATOR};
 /// Allow objects to be signed with a key.
 pub trait SignWithKey<T> {
     fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<T, Error>;
+}
+
+/// Allow objects to be signed with a store.
+pub trait SignWithStore<T> {
+    fn sign_with_store<S, A>(self, store: &S) -> Result<T, Error>
+    where
+        S: Store<Algorithm = A>,
+        A: SigningAlgorithm;
 }
 
 impl<H, C> Token<H, C, Unsigned> {
