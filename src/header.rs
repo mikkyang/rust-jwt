@@ -128,33 +128,37 @@ impl<'a> JoseHeader for BorrowedKeyHeader<'a> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType;
+    use crate::error::Error;
     use crate::header::{Header, HeaderType, PrecomputedAlgorithmOnlyHeader};
     use crate::{FromBase64, ToBase64};
 
     #[test]
-    fn from_base64() {
+    fn from_base64() -> Result<(), Error> {
         let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-        let header = Header::from_base64(enc).unwrap();
+        let header = Header::from_base64(enc)?;
 
         assert_eq!(header.type_.unwrap(), HeaderType::JsonWebToken);
         assert_eq!(header.algorithm, AlgorithmType::Hs256);
 
         let enc = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFLU0YzZyJ9";
-        let header = Header::from_base64(enc).unwrap();
+        let header = Header::from_base64(enc)?;
 
         assert_eq!(header.key_id.unwrap(), "1KSF3g".to_string());
         assert_eq!(header.algorithm, AlgorithmType::Rs256);
+
+        Ok(())
     }
 
     #[test]
-    fn roundtrip() {
+    fn roundtrip() -> Result<(), Error> {
         let header: Header = Default::default();
-        let enc = header.to_base64().unwrap();
-        assert_eq!(header, Header::from_base64(&*enc).unwrap());
+        let enc = header.to_base64()?;
+        assert_eq!(header, Header::from_base64(&*enc)?);
+        Ok(())
     }
 
     #[test]
-    fn precomputed_headers() {
+    fn precomputed_headers() -> Result<(), Error> {
         let algorithms = [
             AlgorithmType::Hs256,
             AlgorithmType::Hs384,
@@ -173,10 +177,12 @@ mod tests {
 
         for algorithm in algorithms.iter() {
             let precomputed = PrecomputedAlgorithmOnlyHeader(*algorithm);
-            let precomputed_str = precomputed.to_base64().unwrap();
+            let precomputed_str = precomputed.to_base64()?;
 
-            let header = Header::from_base64(&*precomputed_str).unwrap();
+            let header = Header::from_base64(&*precomputed_str)?;
             assert_eq!(*algorithm, header.algorithm);
         }
+
+        Ok(())
     }
 }

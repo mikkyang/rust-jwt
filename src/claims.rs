@@ -53,6 +53,7 @@ pub struct RegisteredClaims {
 #[cfg(test)]
 mod tests {
     use crate::claims::Claims;
+    use crate::error::Error;
     use crate::{FromBase64, ToBase64};
     use serde_json::Value;
     use std::default::Default;
@@ -62,26 +63,29 @@ mod tests {
         "eyJpc3MiOiJtaWtreWFuZy5jb20iLCJleHAiOjEzMDIzMTkxMDAsImN1c3RvbV9jbGFpbSI6dHJ1ZX0K";
 
     #[test]
-    fn registered_claims() {
-        let claims = Claims::from_base64(ENCODED_PAYLOAD).unwrap();
+    fn registered_claims() -> Result<(), Error> {
+        let claims = Claims::from_base64(ENCODED_PAYLOAD)?;
 
         assert_eq!(claims.registered.issuer.unwrap(), "mikkyang.com");
         assert_eq!(claims.registered.expiration.unwrap(), 1302319100);
+        Ok(())
     }
 
     #[test]
-    fn private_claims() {
-        let claims = Claims::from_base64(ENCODED_PAYLOAD).unwrap();
+    fn private_claims() -> Result<(), Error> {
+        let claims = Claims::from_base64(ENCODED_PAYLOAD)?;
 
         assert_eq!(claims.private["custom_claim"], Value::Bool(true));
+        Ok(())
     }
 
     #[test]
-    fn roundtrip() {
+    fn roundtrip() -> Result<(), Error> {
         let mut claims: Claims = Default::default();
         claims.registered.issuer = Some("mikkyang.com".into());
         claims.registered.expiration = Some(1302319100);
-        let enc = claims.to_base64().unwrap();
-        assert_eq!(claims, Claims::from_base64(&*enc).unwrap());
+        let enc = claims.to_base64()?;
+        assert_eq!(claims, Claims::from_base64(&*enc)?);
+        Ok(())
     }
 }

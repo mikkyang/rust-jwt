@@ -16,11 +16,16 @@
 //! use sha2::Sha256;
 //! use std::collections::BTreeMap;
 //!
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
 //! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
 //! let mut claims = BTreeMap::new();
 //! claims.insert("sub", "someone");
 //! let token_str = claims.sign_with_key(&key).unwrap();
 //! assert_eq!(token_str, "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 //! #### Verification
 //! Claims can be any `serde::de::DeserializeOwned` type, usually derived with
@@ -34,10 +39,15 @@
 //! use sha2::Sha256;
 //! use std::collections::BTreeMap;
 //!
-//! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
+//! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
-//! let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+//! let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key)?;
 //! assert_eq!(claims["sub"], "someone");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 //! ### Header and Claims
 //! If you need to customize the header, you can use the `Token` struct. For
@@ -54,15 +64,20 @@
 //! use sha2::Sha384;
 //! use std::collections::BTreeMap;
 //!
-//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
+//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
 //! let header = Header {
 //!     algorithm: AlgorithmType::Hs384,
 //!     ..Default::default()
 //! };
 //! let mut claims = BTreeMap::new();
 //! claims.insert("sub", "someone");
-//! let token = Token::new(header, claims).sign_with_key(&key).unwrap();
+//! let token = Token::new(header, claims).sign_with_key(&key)?;
 //! assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 //! #### Verification
 //! Both header and claims have to implement `serde::de::DeserializeOwned`.
@@ -75,13 +90,18 @@
 //! use sha2::Sha384;
 //! use std::collections::BTreeMap;
 //!
-//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+//! # use jwt::Error;
+//! # fn try_main() -> Result<(), Error> {
+//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_";
-//! let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+//! let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key)?;
 //! let header = token.header();
 //! let claims = token.claims();
 //! assert_eq!(header.algorithm, AlgorithmType::Hs384);
 //! assert_eq!(claims["sub"], "someone");
+//! # Ok(())
+//! # }
+//! # try_main().unwrap()
 //! ```
 
 extern crate base64;
@@ -198,6 +218,7 @@ impl<T: DeserializeOwned + Sized> FromBase64 for T {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
+    use crate::error::Error;
     use crate::header::Header;
     use crate::token::signed::SignWithKey;
     use crate::token::verified::VerifyWithKey;
@@ -208,28 +229,30 @@ mod tests {
     use sha2::Sha256;
 
     #[test]
-    pub fn raw_data() {
+    pub fn raw_data() -> Result<(), Error> {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-        let token: Token<Header, Claims, _> = Token::parse_unverified(raw).unwrap();
+        let token: Token<Header, Claims, _> = Token::parse_unverified(raw)?;
 
         assert_eq!(token.header.algorithm, Hs256);
 
-        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
         assert!(token.verify_with_key(&verifier).is_ok());
+
+        Ok(())
     }
 
     #[test]
-    pub fn roundtrip() {
+    pub fn roundtrip() -> Result<(), Error> {
         let token: Token<Header, Claims, _> = Default::default();
-        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
-        let signed_token = token.sign_with_key(&key).unwrap();
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
+        let signed_token = token.sign_with_key(&key)?;
         let signed_token_str = signed_token.as_str();
 
-        let recreated_token: Token<Header, Claims, _> =
-            Token::parse_unverified(signed_token_str).unwrap();
+        let recreated_token: Token<Header, Claims, _> = Token::parse_unverified(signed_token_str)?;
 
         assert_eq!(signed_token.header(), recreated_token.header());
         assert_eq!(signed_token.claims(), recreated_token.claims());
-        assert!(recreated_token.verify_with_key(&key).is_ok());
+        recreated_token.verify_with_key(&key)?;
+        Ok(())
     }
 }

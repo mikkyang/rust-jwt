@@ -34,10 +34,11 @@ fn login(token: &str) -> Result<String, &'static str> {
     claims.subject.ok_or("Missing subject")
 }
 
-fn main() {
-    let token = new_token("Michael Yang", "password").unwrap();
+fn main() -> Result<(), &'static str> {
+    let token = new_token("Michael Yang", "password")?;
 
-    let logged_in_user = login(&*token).unwrap();
+    let logged_in_user = login(&*token)?;
 
     assert_eq!(logged_in_user, "Michael Yang");
+    Ok(())
 }

@@ -140,6 +140,7 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType;
+    use crate::error::Error;
     use crate::header::Header;
     use crate::token::signed::{SignWithKey, SignWithStore};
     use crate::Token;
@@ -153,20 +154,21 @@ mod tests {
     }
 
     #[test]
-    pub fn sign_claims() {
+    pub fn sign_claims() -> Result<(), Error> {
         let claims = Claims { name: "John Doe" };
-        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret").unwrap();
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
 
-        let signed_token = claims.sign_with_key(&key).unwrap();
+        let signed_token = claims.sign_with_key(&key)?;
 
         assert_eq!(signed_token, "eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.LlTGHPZRXbci-y349jXXN0byQniQQqwKGybzQCFIgY0");
+        Ok(())
     }
 
     #[test]
-    pub fn sign_unsigned_with_store() {
+    pub fn sign_unsigned_with_store() -> Result<(), Error> {
         let mut key_store = BTreeMap::new();
-        let key1: Hmac<Sha512> = Hmac::new_varkey(b"first").unwrap();
-        let key2: Hmac<Sha512> = Hmac::new_varkey(b"second").unwrap();
+        let key1: Hmac<Sha512> = Hmac::new_varkey(b"first")?;
+        let key2: Hmac<Sha512> = Hmac::new_varkey(b"second")?;
         key_store.insert("first_key".to_owned(), key1);
         key_store.insert("second_key".to_owned(), key2);
 
@@ -177,8 +179,9 @@ mod tests {
         };
         let claims = Claims { name: "Jane Doe" };
         let token = Token::new(header, claims);
-        let signed_token = token.sign_with_store(&key_store).unwrap();
+        let signed_token = token.sign_with_store(&key_store)?;
 
         assert_eq!(signed_token.as_str(), "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A");
+        Ok(())
     }
 }

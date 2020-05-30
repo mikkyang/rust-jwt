@@ -114,6 +114,7 @@ mod tests {
     use crate::algorithm::openssl::PKeyWithDigest;
     use crate::algorithm::AlgorithmType::{self, *};
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
+    use crate::error::Error;
     use crate::header::PrecomputedAlgorithmOnlyHeader as AlgOnly;
     use crate::ToBase64;
     use openssl::hash::MessageDigest;
@@ -127,59 +128,54 @@ mod tests {
     "cQsAHF2jHvPGFP5zTD8BgoJrnzEx6JNQCpupebWLFnOc2r_punDDTylI6Ia4JZNkvy2dQP-7W-DEbFQ3oaarHsDndqUgwf9iYlDQxz4Rr2nEZX1FX0-FMEgFPeQpdwveCgjtTYUbVy37ijUySN_rW-xZTrsh_Ug-ica8t-zHRIw";
 
     #[test]
-    fn rs256_sign() {
+    fn rs256_sign() -> Result<(), Error> {
         let pem = include_bytes!("../../test/rs256-private.pem");
 
         let algorithm = PKeyWithDigest {
             digest: MessageDigest::sha256(),
-            key: PKey::private_key_from_pem(pem).unwrap(),
+            key: PKey::private_key_from_pem(pem)?,
         };
 
-        let result = algorithm
-            .sign(&AlgOnly(Rs256).to_base64().unwrap(), CLAIMS)
-            .unwrap();
+        let result = algorithm.sign(&AlgOnly(Rs256).to_base64()?, CLAIMS)?;
         assert_eq!(result, RS256_SIGNATURE);
+        Ok(())
     }
 
     #[test]
-    fn rs256_verify() {
+    fn rs256_verify() -> Result<(), Error> {
         let pem = include_bytes!("../../test/rs256-public.pem");
 
         let algorithm = PKeyWithDigest {
             digest: MessageDigest::sha256(),
-            key: PKey::public_key_from_pem(pem).unwrap(),
+            key: PKey::public_key_from_pem(pem)?,
         };
 
-        assert!(algorithm
-            .verify(
-                &AlgOnly(Rs256).to_base64().unwrap(),
-                CLAIMS,
-                RS256_SIGNATURE
-            )
-            .unwrap_or(false));
+        let verification_result =
+            algorithm.verify(&AlgOnly(Rs256).to_base64()?, CLAIMS, RS256_SIGNATURE)?;
+        assert!(verification_result);
+        Ok(())
     }
 
     #[test]
-    fn es256() {
+    fn es256() -> Result<(), Error> {
         let private_pem = include_bytes!("../../test/es256-private.pem");
         let private_key = PKeyWithDigest {
             digest: MessageDigest::sha256(),
-            key: PKey::private_key_from_pem(private_pem).unwrap(),
+            key: PKey::private_key_from_pem(private_pem)?,
         };
 
-        let signature = private_key
-            .sign(&AlgOnly(Es256).to_base64().unwrap(), CLAIMS)
-            .unwrap();
+        let signature = private_key.sign(&AlgOnly(Es256).to_base64()?, CLAIMS)?;
 
         let public_pem = include_bytes!("../../test/es256-public.pem");
 
         let public_key = PKeyWithDigest {
             digest: MessageDigest::sha256(),
-            key: PKey::public_key_from_pem(public_pem).unwrap(),
+            key: PKey::public_key_from_pem(public_pem)?,
         };
 
-        assert!(public_key
-            .verify(&AlgOnly(Es256).to_base64().unwrap(), CLAIMS, &*signature)
-            .unwrap_or(false));
+        let verification_result =
+            public_key.verify(&AlgOnly(Es256).to_base64()?, CLAIMS, &*signature)?;
+        assert!(verification_result);
+        Ok(())
     }
 }
