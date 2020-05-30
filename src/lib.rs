@@ -198,7 +198,7 @@ impl<T: DeserializeOwned + Sized> FromBase64 for T {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType::Hs256;
-    use crate::error::tests::TestResult;
+    use crate::error::Error;
     use crate::header::Header;
     use crate::token::signed::SignWithKey;
     use crate::token::verified::VerifyWithKey;
@@ -209,7 +209,7 @@ mod tests {
     use sha2::Sha256;
 
     #[test]
-    pub fn raw_data() -> TestResult {
+    pub fn raw_data() -> Result<(), Error> {
         let raw = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
         let token: Token<Header, Claims, _> = Token::parse_unverified(raw)?;
 
@@ -222,7 +222,7 @@ mod tests {
     }
 
     #[test]
-    pub fn roundtrip() -> TestResult {
+    pub fn roundtrip() -> Result<(), Error> {
         let token: Token<Header, Claims, _> = Default::default();
         let key: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
         let signed_token = token.sign_with_key(&key)?;

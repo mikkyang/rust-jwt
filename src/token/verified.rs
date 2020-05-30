@@ -135,7 +135,7 @@ pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::VerifyingAlgorithm;
-    use crate::error::tests::TestResult;
+    use crate::error::Error;
     use crate::token::verified::VerifyWithStore;
     use hmac::{Hmac, Mac};
     use sha2::{Sha256, Sha512};
@@ -147,7 +147,7 @@ mod tests {
     }
 
     #[test]
-    pub fn verify_claims_with_store() -> TestResult {
+    pub fn verify_claims_with_store() -> Result<(), Error> {
         let mut key_store = BTreeMap::new();
         let key1: Hmac<Sha256> = Hmac::new_varkey(b"first")?;
         let key2: Hmac<Sha512> = Hmac::new_varkey(b"second")?;

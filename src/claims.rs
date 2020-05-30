@@ -53,7 +53,7 @@ pub struct RegisteredClaims {
 #[cfg(test)]
 mod tests {
     use crate::claims::Claims;
-    use crate::error::tests::TestResult;
+    use crate::error::Error;
     use crate::{FromBase64, ToBase64};
     use serde_json::Value;
     use std::default::Default;
@@ -63,7 +63,7 @@ mod tests {
         "eyJpc3MiOiJtaWtreWFuZy5jb20iLCJleHAiOjEzMDIzMTkxMDAsImN1c3RvbV9jbGFpbSI6dHJ1ZX0K";
 
     #[test]
-    fn registered_claims() -> TestResult {
+    fn registered_claims() -> Result<(), Error> {
         let claims = Claims::from_base64(ENCODED_PAYLOAD)?;
 
         assert_eq!(claims.registered.issuer.unwrap(), "mikkyang.com");
@@ -72,7 +72,7 @@ mod tests {
     }
 
     #[test]
-    fn private_claims() -> TestResult {
+    fn private_claims() -> Result<(), Error> {
         let claims = Claims::from_base64(ENCODED_PAYLOAD)?;
 
         assert_eq!(claims.private["custom_claim"], Value::Bool(true));
@@ -80,7 +80,7 @@ mod tests {
     }
 
     #[test]
-    fn roundtrip() -> TestResult {
+    fn roundtrip() -> Result<(), Error> {
         let mut claims: Claims = Default::default();
         claims.registered.issuer = Some("mikkyang.com".into());
         claims.registered.expiration = Some(1302319100);

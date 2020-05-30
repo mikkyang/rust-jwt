@@ -140,7 +140,7 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType;
-    use crate::error::tests::TestResult;
+    use crate::error::Error;
     use crate::header::Header;
     use crate::token::signed::{SignWithKey, SignWithStore};
     use crate::Token;
@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[test]
-    pub fn sign_claims() -> TestResult {
+    pub fn sign_claims() -> Result<(), Error> {
         let claims = Claims { name: "John Doe" };
         let key: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
 
@@ -165,7 +165,7 @@ mod tests {
     }
 
     #[test]
-    pub fn sign_unsigned_with_store() -> TestResult {
+    pub fn sign_unsigned_with_store() -> Result<(), Error> {
         let mut key_store = BTreeMap::new();
         let key1: Hmac<Sha512> = Hmac::new_varkey(b"first")?;
         let key2: Hmac<Sha512> = Hmac::new_varkey(b"second")?;

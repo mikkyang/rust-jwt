@@ -128,12 +128,12 @@ impl<'a> JoseHeader for BorrowedKeyHeader<'a> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType;
-    use crate::error::tests::TestResult;
+    use crate::error::Error;
     use crate::header::{Header, HeaderType, PrecomputedAlgorithmOnlyHeader};
     use crate::{FromBase64, ToBase64};
 
     #[test]
-    fn from_base64() -> TestResult {
+    fn from_base64() -> Result<(), Error> {
         let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
         let header = Header::from_base64(enc)?;
 
@@ -150,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn roundtrip() -> TestResult {
+    fn roundtrip() -> Result<(), Error> {
         let header: Header = Default::default();
         let enc = header.to_base64()?;
         assert_eq!(header, Header::from_base64(&*enc)?);
@@ -158,7 +158,7 @@ mod tests {
     }
 
     #[test]
-    fn precomputed_headers() -> TestResult {
+    fn precomputed_headers() -> Result<(), Error> {
         let algorithms = [
             AlgorithmType::Hs256,
             AlgorithmType::Hs384,

@@ -114,7 +114,7 @@ mod tests {
     use crate::algorithm::openssl::PKeyWithDigest;
     use crate::algorithm::AlgorithmType::{self, *};
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
-    use crate::error::tests::TestResult;
+    use crate::error::Error;
     use crate::header::PrecomputedAlgorithmOnlyHeader as AlgOnly;
     use crate::ToBase64;
     use openssl::hash::MessageDigest;
@@ -128,7 +128,7 @@ mod tests {
     "cQsAHF2jHvPGFP5zTD8BgoJrnzEx6JNQCpupebWLFnOc2r_punDDTylI6Ia4JZNkvy2dQP-7W-DEbFQ3oaarHsDndqUgwf9iYlDQxz4Rr2nEZX1FX0-FMEgFPeQpdwveCgjtTYUbVy37ijUySN_rW-xZTrsh_Ug-ica8t-zHRIw";
 
     #[test]
-    fn rs256_sign() -> TestResult {
+    fn rs256_sign() -> Result<(), Error> {
         let pem = include_bytes!("../../test/rs256-private.pem");
 
         let algorithm = PKeyWithDigest {
@@ -142,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    fn rs256_verify() -> TestResult {
+    fn rs256_verify() -> Result<(), Error> {
         let pem = include_bytes!("../../test/rs256-public.pem");
 
         let algorithm = PKeyWithDigest {
@@ -157,7 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn es256() -> TestResult {
+    fn es256() -> Result<(), Error> {
         let private_pem = include_bytes!("../../test/es256-private.pem");
         let private_key = PKeyWithDigest {
             digest: MessageDigest::sha256(),

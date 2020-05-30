@@ -57,8 +57,3 @@ error_wrap!(MacError, Error::RustCryptoMac);
 error_wrap!(InvalidKeyLength, Error::RustCryptoMacKeyLength);
 #[cfg(feature = "openssl")]
 error_wrap!(openssl::error::ErrorStack, Error::OpenSsl);
-
-#[cfg(test)]
-pub(crate) mod tests {
-    pub type TestResult = Result<(), super::Error>;
-}
