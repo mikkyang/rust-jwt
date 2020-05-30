@@ -39,7 +39,11 @@ impl<T> PKeyWithDigest<T> {
     fn algorithm_type(&self) -> AlgorithmType {
         match (self.key.id(), self.digest.type_()) {
             (Id::RSA, Nid::SHA256) => AlgorithmType::Rs256,
+            (Id::RSA, Nid::SHA384) => AlgorithmType::Rs384,
+            (Id::RSA, Nid::SHA512) => AlgorithmType::Rs512,
             (Id::EC, Nid::SHA256) => AlgorithmType::Es256,
+            (Id::EC, Nid::SHA384) => AlgorithmType::Es384,
+            (Id::EC, Nid::SHA512) => AlgorithmType::Es512,
             _ => panic!("Invalid algorithm type"),
         }
     }
