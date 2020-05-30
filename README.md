@@ -62,7 +62,7 @@ use std::collections::BTreeMap;
 let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
 let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
 
-let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
+let claims: BTreeMap<String, String> = token_str.verify_with_key(&key).unwrap();
 
 assert_eq!(claims["sub"], "someone");
 ```
