@@ -126,8 +126,8 @@ assert_eq!(claims["sub"], "someone");
 ```
 
 ### Store
-If you have a collection of keys indexed by key id, you can anything that implements the `Store` trait. By
-default this is implemented for all `Index<&str>` traits.
+A `Store` can be used to represent a collection of keys indexed by key id. By default this is implemented
+for all `Index<&str>` traits.
 
 For `Token`s, the methods `sign_with_store` and `verify_with_store` can be used directly. For bare claims,
 a key id needs to be included as a tuple.
@@ -145,7 +145,7 @@ use std::collections::BTreeMap;
 let mut store = BTreeMap::new();
 let key1: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
 let key2: Hmac<Sha512> = Hmac::new_varkey(b"second").unwrap();
-// If you will have multiple types of keys, they will need to be boxed
+// If you will have multiple types of keys, they will need to be boxed into trait objects
 store.insert("first_key", Box::new(key1) as Box<dyn SigningAlgorithm>);
 store.insert("second_key", Box::new(key2) as Box<dyn SigningAlgorithm>);
 
