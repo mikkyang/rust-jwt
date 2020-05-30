@@ -1,7 +1,7 @@
 use crate::algorithm::store::Store;
 use crate::algorithm::SigningAlgorithm;
 use crate::error::Error;
-use crate::header::{Header, JoseHeader};
+use crate::header::{BorrowedKeyHeader, Header, JoseHeader};
 use crate::token::{Signed, Unsigned};
 use crate::{ToBase64, Token, SEPARATOR};
 
@@ -59,6 +59,25 @@ impl<C: ToBase64> SignWithKey<String> for C {
     }
 }
 
+impl<'a, C: ToBase64> SignWithStore<String> for (&'a str, C) {
+    fn sign_with_store<S, A>(self, store: &S) -> Result<String, Error>
+    where
+        S: Store<Algorithm = A>,
+        A: SigningAlgorithm,
+    {
+        let (key_id, claims) = self;
+        let key = store.get(key_id).ok_or(Error::StoreMissingKey)?;
+
+        let header = BorrowedKeyHeader {
+            algorithm: key.algorithm_type(),
+            key_id,
+        };
+
+        let token = Token::new(header, claims).sign_with_key(key)?;
+        Ok(token.signature.token_string)
+    }
+}
+
 impl<H, C> SignWithKey<Token<H, C, Signed>> for Token<H, C, Unsigned>
 where
     H: ToBase64 + JoseHeader,
@@ -100,9 +119,11 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 
 #[cfg(test)]
 mod tests {
-    use crate::token::signed::SignWithKey;
+    use crate::algorithm::SigningAlgorithm;
+    use crate::token::signed::{SignWithKey, SignWithStore};
     use hmac::{Hmac, Mac};
-    use sha2::Sha256;
+    use sha2::{Sha256, Sha512};
+    use std::collections::BTreeMap;
 
     #[derive(Serialize)]
     struct Claims<'a> {
@@ -117,5 +138,20 @@ mod tests {
         let signed_token = claims.sign_with_key(&key).unwrap();
 
         assert_eq!(signed_token, "eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.LlTGHPZRXbci-y349jXXN0byQniQQqwKGybzQCFIgY0");
+    }
+
+    #[test]
+    pub fn sign_claims_with_store() {
+        let mut key_store = BTreeMap::new();
+        let key1: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
+        let key2: Hmac<Sha512> = Hmac::new_varkey(b"second").unwrap();
+        key_store.insert("first_key", Box::new(key1) as Box<dyn SigningAlgorithm>);
+        key_store.insert("second_key", Box::new(key2) as Box<dyn SigningAlgorithm>);
+
+        let claims = Claims { name: "Jane Doe" };
+
+        let signed_token = ("second_key", &claims).sign_with_store(&key_store).unwrap();
+
+        assert_eq!(signed_token, "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A");
     }
 }
