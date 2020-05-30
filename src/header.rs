@@ -1,6 +1,9 @@
 //! Convenience structs for commonly defined fields in headers.
 
 use crate::algorithm::AlgorithmType;
+use crate::error::Error;
+use crate::ToBase64;
+use std::borrow::Cow;
 
 /// A trait for any header than can conform to the
 /// [JWT specification](https://tools.ietf.org/html/rfc7519#page-11).
@@ -68,10 +71,43 @@ pub enum HeaderContentType {
     JsonWebToken,
 }
 
+/// A header that only contains the algorithm type. The `ToBase64`
+/// implementation uses static strings for faster serialization.
+pub struct PrecomputedAlgorithmOnlyHeader(pub AlgorithmType);
+
+impl JoseHeader for PrecomputedAlgorithmOnlyHeader {
+    fn algorithm_type(&self) -> AlgorithmType {
+        let PrecomputedAlgorithmOnlyHeader(algorithm_type) = *self;
+        algorithm_type
+    }
+}
+
+impl ToBase64 for PrecomputedAlgorithmOnlyHeader {
+    fn to_base64(&self) -> Result<Cow<'static, str>, Error> {
+        let precomputed_str = match self.algorithm_type() {
+            AlgorithmType::Hs256 => "eyJhbGciOiAiSFMyNTYifQ",
+            AlgorithmType::Hs384 => "eyJhbGciOiAiSFMzODQifQ",
+            AlgorithmType::Hs512 => "eyJhbGciOiAiSFM1MTIifQ",
+            AlgorithmType::Rs256 => "eyJhbGciOiAiUlMyNTYifQ",
+            AlgorithmType::Rs384 => "eyJhbGciOiAiUlMzODQifQ",
+            AlgorithmType::Rs512 => "eyJhbGciOiAiUlM1MTIifQ",
+            AlgorithmType::Es256 => "eyJhbGciOiAiRVMyNTYifQ",
+            AlgorithmType::Es384 => "eyJhbGciOiAiRVMzODQifQ",
+            AlgorithmType::Es512 => "eyJhbGciOiAiRVM1MTIifQ",
+            AlgorithmType::Ps256 => "eyJhbGciOiAiUFMyNTYifQ",
+            AlgorithmType::Ps384 => "eyJhbGciOiAiUFMzODQifQ",
+            AlgorithmType::Ps512 => "eyJhbGciOiAiUFM1MTIifQ",
+            AlgorithmType::None => "eyJhbGciOiAibm9uZSJ9Cg",
+        };
+
+        Ok(Cow::Borrowed(precomputed_str))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType;
-    use crate::header::{Header, HeaderType};
+    use crate::header::{Header, HeaderType, PrecomputedAlgorithmOnlyHeader};
     use crate::{FromBase64, ToBase64};
 
     #[test]
@@ -94,5 +130,32 @@ mod tests {
         let header: Header = Default::default();
         let enc = header.to_base64().unwrap();
         assert_eq!(header, Header::from_base64(&*enc).unwrap());
+    }
+
+    #[test]
+    fn precomputed_headers() {
+        let algorithms = [
+            AlgorithmType::Hs256,
+            AlgorithmType::Hs384,
+            AlgorithmType::Hs512,
+            AlgorithmType::Rs256,
+            AlgorithmType::Rs384,
+            AlgorithmType::Rs512,
+            AlgorithmType::Es256,
+            AlgorithmType::Es384,
+            AlgorithmType::Es512,
+            AlgorithmType::Ps256,
+            AlgorithmType::Ps384,
+            AlgorithmType::Ps512,
+            AlgorithmType::None,
+        ];
+
+        for algorithm in algorithms.iter() {
+            let precomputed = PrecomputedAlgorithmOnlyHeader(*algorithm);
+            let precomputed_str = precomputed.to_base64().unwrap();
+
+            let header = Header::from_base64(&*precomputed_str).unwrap();
+            assert_eq!(*algorithm, header.algorithm);
+        }
     }
 }

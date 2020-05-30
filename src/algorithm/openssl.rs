@@ -112,21 +112,19 @@ fn jose_to_der(jose: &[u8]) -> Result<Vec<u8>, Error> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::openssl::PKeyWithDigest;
+    use crate::algorithm::AlgorithmType::{self, *};
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
+    use crate::header::PrecomputedAlgorithmOnlyHeader as AlgOnly;
+    use crate::ToBase64;
     use openssl::hash::MessageDigest;
     use openssl::pkey::PKey;
 
-    // {"alg":"RS256","typ":"JWT"}
-    const RS256_HEADER: &'static str = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9";
-    // {"alg":"ES256","typ":"JWT"}
-    const ES256_HEADER: &'static str = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9";
     // {"sub":"1234567890","name":"John Doe","admin":true}
     const CLAIMS: &'static str =
         "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
 
     const RS256_SIGNATURE: &'static str =
-    "EkN-DOsnsuRjRO6BxXemmJDm3HbxrbRzXglbN2S4sOkopdU4IsDxTI8jO19W_A4K8ZPJijNLis4EZsHeY559a4DFOd50_OqgHGuERTqYZyuhtF39y\
-    xJPAjUESwxk2J5k_4zM3O-vtd1Ghyo4IbqKKSy6J9mTniYJPenn5-HIirE";
+    "cQsAHF2jHvPGFP5zTD8BgoJrnzEx6JNQCpupebWLFnOc2r_punDDTylI6Ia4JZNkvy2dQP-7W-DEbFQ3oaarHsDndqUgwf9iYlDQxz4Rr2nEZX1FX0-FMEgFPeQpdwveCgjtTYUbVy37ijUySN_rW-xZTrsh_Ug-ica8t-zHRIw";
 
     #[test]
     fn rs256_sign() {
@@ -137,7 +135,9 @@ mod tests {
             key: PKey::private_key_from_pem(pem).unwrap(),
         };
 
-        let result = algorithm.sign(RS256_HEADER, CLAIMS).unwrap();
+        let result = algorithm
+            .sign(&AlgOnly(Rs256).to_base64().unwrap(), CLAIMS)
+            .unwrap();
         assert_eq!(result, RS256_SIGNATURE);
     }
 
@@ -151,7 +151,11 @@ mod tests {
         };
 
         assert!(algorithm
-            .verify(RS256_HEADER, CLAIMS, RS256_SIGNATURE)
+            .verify(
+                &AlgOnly(Rs256).to_base64().unwrap(),
+                CLAIMS,
+                RS256_SIGNATURE
+            )
             .unwrap_or(false));
     }
 
@@ -163,7 +167,9 @@ mod tests {
             key: PKey::private_key_from_pem(private_pem).unwrap(),
         };
 
-        let signature = private_key.sign(ES256_HEADER, CLAIMS).unwrap();
+        let signature = private_key
+            .sign(&AlgOnly(Es256).to_base64().unwrap(), CLAIMS)
+            .unwrap();
 
         let public_pem = include_bytes!("../../test/es256-public.pem");
 
@@ -173,7 +179,7 @@ mod tests {
         };
 
         assert!(public_key
-            .verify(ES256_HEADER, CLAIMS, &*signature)
+            .verify(&AlgOnly(Es256).to_base64().unwrap(), CLAIMS, &*signature)
             .unwrap_or(false));
     }
 }
