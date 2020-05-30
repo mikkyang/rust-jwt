@@ -129,8 +129,12 @@ assert_eq!(claims["sub"], "someone");
 A `Store` can be used to represent a collection of keys indexed by key id. By default this is implemented
 for all `Index<&str>` traits.
 
-For `Token`s, the methods `sign_with_store` and `verify_with_store` can be used directly. For bare claims,
-a key id needs to be included as a tuple.
+For the trait `SignWithStore`, the key id will be automatically added to the header for bare claims.
+Because claims do not have a way to specify key id, a tuple of key id and claims is necessary. For
+tokens, the header's key id will be used to get the key.
+
+For the trait `VerifyWithStore`, the key id from the deserialized header will be used to choose the key
+to use.
 
 ```rust
 extern crate hmac;
