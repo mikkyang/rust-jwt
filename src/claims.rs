@@ -3,7 +3,6 @@
 use serde_json;
 use std::collections::BTreeMap;
 
-
 /// Generic [JWT claims](https://tools.ietf.org/html/rfc7519#page-8) with
 /// defined fields for registered and private claims.
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]

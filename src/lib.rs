@@ -84,7 +84,6 @@
 //! assert_eq!(claims["sub"], "someone");
 //! ```
 
-
 extern crate base64;
 extern crate crypto_mac;
 extern crate digest;
@@ -114,9 +113,9 @@ pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::{Header, JoseHeader};
-pub use crate::token::{Unsigned, Unverified, Verified};
 pub use crate::token::signed::SignWithKey;
 pub use crate::token::verified::VerifyWithKey;
+pub use crate::token::{Unsigned, Unverified, Verified};
 
 pub mod algorithm;
 pub mod claims;
@@ -177,7 +176,6 @@ impl<T: Serialize> ToBase64 for T {
         Ok(Cow::Owned(encoded_json_bytes))
     }
 }
-
 
 /// A trait used to parse objects from base64 encoding. The return type can
 /// be either owned if the header is dynamic, or it can be borrowed if the
