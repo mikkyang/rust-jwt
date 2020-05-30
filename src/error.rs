@@ -54,3 +54,29 @@ error_wrap!(FromUtf8Error, Error::Utf8);
 error_wrap!(MacError, Error::RustCryptoMac);
 #[cfg(feature = "openssl")]
 error_wrap!(openssl::error::ErrorStack, Error::OpenSsl);
+
+#[cfg(test)]
+pub(crate) mod tests {
+    #[derive(Debug)]
+    pub enum TestError {
+        LibError(super::Error),
+        KeyError(crypto_mac::InvalidKeyLength),
+    }
+
+    impl<T> From<T> for TestError
+    where
+        T: Into<super::Error>,
+    {
+        fn from(error: T) -> Self {
+            TestError::LibError(error.into())
+        }
+    }
+
+    impl From<crypto_mac::InvalidKeyLength> for TestError {
+        fn from(error: crypto_mac::InvalidKeyLength) -> Self {
+            TestError::KeyError(error)
+        }
+    }
+
+    pub type TestResult = Result<(), TestError>;
+}
