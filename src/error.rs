@@ -8,6 +8,8 @@ use std::string::FromUtf8Error;
 #[derive(Debug)]
 pub enum Error {
     AlgorithmMismatch(AlgorithmType, AlgorithmType),
+    NoKeyId,
+    NoKeyWithKeyId(String),
     Format,
     Base64(DecodeError),
     Json(JsonError),
@@ -23,6 +25,8 @@ impl fmt::Display for Error {
             Error::AlgorithmMismatch(a, b) => {
                 write!(f, "Expected algorithm type {:?} but found {:?}", a, b)
             }
+            Error::NoKeyId => write!(f, "No key id found"),
+            Error::NoKeyWithKeyId(ref kid) => write!(f, "Key with key id {} not found", kid),
             Error::Format => write!(f, "Format"),
             Error::Base64(ref x) => write!(f, "{}", x),
             Error::Json(ref x) => write!(f, "{}", x),

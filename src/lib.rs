@@ -108,13 +108,14 @@ use std::borrow::Cow;
 
 #[cfg(feature = "openssl")]
 pub use crate::algorithm::openssl::PKeyWithDigest;
+pub use crate::algorithm::store::Store;
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
 pub use crate::claims::RegisteredClaims;
 pub use crate::error::Error;
 pub use crate::header::{Header, JoseHeader};
-pub use crate::token::signed::SignWithKey;
-pub use crate::token::verified::VerifyWithKey;
+pub use crate::token::signed::{SignWithKey, SignWithStore};
+pub use crate::token::verified::{VerifyWithKey, VerifyWithStore};
 pub use crate::token::{Unsigned, Unverified, Verified};
 
 pub mod algorithm;

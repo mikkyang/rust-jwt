@@ -104,6 +104,27 @@ impl ToBase64 for PrecomputedAlgorithmOnlyHeader {
     }
 }
 
+/// A header with a borrowed key. Used for signing claims with a Store
+/// conveniently.
+#[derive(Serialize)]
+pub(crate) struct BorrowedKeyHeader<'a> {
+    #[serde(rename = "alg")]
+    pub algorithm: AlgorithmType,
+
+    #[serde(rename = "kid")]
+    pub key_id: &'a str,
+}
+
+impl<'a> JoseHeader for BorrowedKeyHeader<'a> {
+    fn algorithm_type(&self) -> AlgorithmType {
+        self.algorithm
+    }
+
+    fn key_id(&self) -> Option<&str> {
+        Some(self.key_id)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::algorithm::AlgorithmType;

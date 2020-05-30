@@ -125,6 +125,43 @@ assert_eq!(header.algorithm, AlgorithmType::Hs384);
 assert_eq!(claims["sub"], "someone");
 ```
 
+### Store
+A `Store` can be used to represent a collection of keys indexed by key id. By default this is implemented
+for all `Index<&str>` traits.
+
+For the trait `SignWithStore`, the key id will be automatically added to the header for bare claims.
+Because claims do not have a way to specify key id, a tuple of key id and claims is necessary. For
+tokens, the header's key id will be used to get the key.
+
+For the trait `VerifyWithStore`, the key id from the deserialized header will be used to choose the key
+to use.
+
+```rust
+extern crate hmac;
+extern crate jwt;
+extern crate sha2;
+
+use hmac::{Hmac, Mac};
+use jwt::{Header, SigningAlgorithm, SignWithStore, Store, Token, VerifyWithStore};
+use sha2::Sha512;
+use std::collections::BTreeMap;
+
+let mut store: BTreeMap<_, Hmac<Sha512>> = BTreeMap::new();
+store.insert("first_key", Hmac::new_varkey(b"first").unwrap());
+store.insert("second_key", Hmac::new_varkey(b"second").unwrap());
+
+let mut claims = BTreeMap::new();
+claims.insert("sub", "someone");
+
+let token_str = ("second_key", claims).sign_with_store(&store).unwrap();
+
+assert_eq!(token_str, "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJzdWIiOiJzb21lb25lIn0.9gALQon5Mk8r4BjOZ2SJQlauGmT4WUhpN152x9dfKvkPON1VwEN09Id8vjQ0ABlfLJUTVNP36dsdrpYEZDLUcw");
+
+let verified_token: Token<Header, BTreeMap<String, String>, _> = token_str.verify_with_store(&store).unwrap();
+assert_eq!(verified_token.claims()["sub"], "someone");
+assert_eq!(verified_token.header().key_id.as_ref().unwrap(), "second_key");
+```
+
 ## Supported Algorithms
 
 Pure Rust HMAC is supported through [RustCrypto](https://github.com/RustCrypto). Implementations of RSA and ECDSA signatures are supported through OpenSSL, which is not enabled by default. OpenSSL types must be wrapped in the [`PKeyWithDigest`](http://mikkyang.github.io/rust-jwt/doc/jwt/algorithm/openssl/struct.PKeyWithDigest.html) struct.
