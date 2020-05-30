@@ -43,7 +43,7 @@
 //! # fn try_main() -> Result<(), Error> {
 //! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
-//! let claims: BTreeMap<String, String> = VerifyWithKey::verify_with_key(token_str, &key)?;
+//! let claims: BTreeMap<String, String> = token_str.verify_with_key(&key)?;
 //! assert_eq!(claims["sub"], "someone");
 //! # Ok(())
 //! # }
@@ -94,7 +94,7 @@
 //! # fn try_main() -> Result<(), Error> {
 //! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_";
-//! let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key)?;
+//! let token: Token<Header, BTreeMap<String, String>, _> = token_str.verify_with_key(&key)?;
 //! let header = token.header();
 //! let claims = token.claims();
 //! assert_eq!(header.algorithm, AlgorithmType::Hs384);
