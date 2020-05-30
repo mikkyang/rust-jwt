@@ -124,3 +124,17 @@ let claims = token.claims();
 assert_eq!(header.algorithm, AlgorithmType::Hs384);
 assert_eq!(claims["sub"], "someone");
 ```
+
+## Supported Algorithms
+
+Pure Rust HMAC is supported through [RustCrypto](https://github.com/RustCrypto). Implementations of RSA and ECDSA signatures are supported through OpenSSL, which is not enabled by default. OpenSSL types must be wrapped in the [`PKeyWithDigest`](http://mikkyang.github.io/rust-jwt/doc/jwt/algorithm/openssl/struct.PKeyWithDigest.html) struct.
+
+* HS256
+* HS384
+* HS512
+* RS256
+* RS384
+* RS512
+* ES256
+* ES384
+* ES512
