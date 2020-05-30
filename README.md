@@ -138,7 +138,7 @@ extern crate jwt;
 extern crate sha2;
 
 use hmac::{Hmac, Mac};
-use jwt::{SigningAlgorithm, SignWithStore, Store};
+use jwt::{Header, SigningAlgorithm, SignWithStore, Store, Token, VerifyWithStore};
 use sha2::Sha512;
 use std::collections::BTreeMap;
 
@@ -152,6 +152,10 @@ claims.insert("sub", "someone");
 let token_str = ("second_key", claims).sign_with_store(&store).unwrap();
 
 assert_eq!(token_str, "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJzdWIiOiJzb21lb25lIn0.9gALQon5Mk8r4BjOZ2SJQlauGmT4WUhpN152x9dfKvkPON1VwEN09Id8vjQ0ABlfLJUTVNP36dsdrpYEZDLUcw");
+
+let verified_token: Token<Header, BTreeMap<String, String>, _> = token_str.verify_with_store(&store).unwrap();
+assert_eq!(verified_token.claims()["sub"], "someone");
+assert_eq!(verified_token.header().key_id.as_ref().unwrap(), "second_key");
 ```
 
 ## Supported Algorithms
