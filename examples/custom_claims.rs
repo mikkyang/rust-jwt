@@ -4,7 +4,7 @@ extern crate jwt;
 extern crate serde_derive;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::{Header, SignWithKey, Token, VerifyWithKey};
 use sha2::Sha256;
 use std::default::Default;
