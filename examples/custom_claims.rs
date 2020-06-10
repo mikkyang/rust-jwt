@@ -25,7 +25,6 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
     let claims = Custom {
         sub: user_id.into(),
         rhino: true,
-        ..Default::default()
     };
     let unsigned_token = Token::new(header, claims);
 

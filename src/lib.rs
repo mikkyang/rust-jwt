@@ -146,7 +146,7 @@ pub mod header;
 pub mod legacy;
 pub mod token;
 
-const SEPARATOR: &'static str = ".";
+const SEPARATOR: &str = ".";
 
 /// Representation of a structured JWT. Methods vary based on the signature
 /// type `S`.

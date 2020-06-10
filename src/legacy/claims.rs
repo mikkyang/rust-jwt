@@ -28,7 +28,7 @@ pub struct Registered {
 impl Claims {
     pub fn new(reg: Registered) -> Claims {
         Claims {
-            reg: reg,
+            reg,
             private: BTreeMap::new(),
         }
     }
@@ -41,7 +41,7 @@ mod tests {
     use std::default::Default;
 
     // {"iss":"mikkyang.com","exp":1302319100,"custom_claim":true}
-    const ENCODED_PAYLOAD: &'static str =
+    const ENCODED_PAYLOAD: &str =
         "eyJpc3MiOiJtaWtreWFuZy5jb20iLCJleHAiOjEzMDIzMTkxMDAsImN1c3RvbV9jbGFpbSI6dHJ1ZX0K";
 
     #[test]

@@ -35,8 +35,8 @@ where
     pub fn new(header: H, claims: C) -> Token<H, C> {
         Token {
             raw: None,
-            header: header,
-            claims: claims,
+            header,
+            claims,
         }
     }
 
@@ -163,13 +163,13 @@ mod tests {
         {
             assert_eq!(token.header.algorithm, Hs256);
         }
-        assert!(token.verify("secret".as_bytes(), Sha256::new()));
+        assert!(token.verify(b"secret", Sha256::new()));
     }
 
     #[test]
     pub fn roundtrip() {
         let token: Token<Header, Claims> = Default::default();
-        let key = "secret".as_bytes();
+        let key = b"secret";
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
 

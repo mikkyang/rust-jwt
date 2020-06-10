@@ -23,7 +23,7 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
 
     let signed_token = claims.sign_with_key(&key).map_err(|_e| "Sign failed")?;
 
-    Ok(signed_token.into())
+    Ok(signed_token)
 }
 
 fn login(token: &str) -> Result<String, &'static str> {
