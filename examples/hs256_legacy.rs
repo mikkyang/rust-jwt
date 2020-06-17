@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 extern crate jwt;
 extern crate sha2;
 

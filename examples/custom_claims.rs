@@ -4,7 +4,7 @@ extern crate jwt;
 extern crate serde_derive;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::{Header, SignWithKey, Token, VerifyWithKey};
 use sha2::Sha256;
 use std::default::Default;
@@ -25,7 +25,6 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
     let claims = Custom {
         sub: user_id.into(),
         rhino: true,
-        ..Default::default()
     };
     let unsigned_token = Token::new(header, claims);
 

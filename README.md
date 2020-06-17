@@ -30,7 +30,7 @@ extern crate hmac;
 extern crate jwt;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::SignWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -54,7 +54,7 @@ extern crate hmac;
 extern crate jwt;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -82,7 +82,7 @@ extern crate hmac;
 extern crate jwt;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::{AlgorithmType, Header, SignWithKey, Token};
 use sha2::Sha384;
 use std::collections::BTreeMap;
@@ -109,7 +109,7 @@ extern crate hmac;
 extern crate jwt;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
 use sha2::Sha384;
 use std::collections::BTreeMap;
@@ -141,7 +141,7 @@ extern crate hmac;
 extern crate jwt;
 extern crate sha2;
 
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 use jwt::{Header, SignWithStore, Token, VerifyWithStore};
 use sha2::Sha512;
 use std::collections::BTreeMap;

@@ -6,7 +6,7 @@ use crate::token::verified::split_components;
 use crate::{FromBase64, ToBase64, SEPARATOR};
 use digest::generic_array::ArrayLength;
 use digest::*;
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, NewMac};
 
 pub use crate::legacy::claims::Claims;
 pub use crate::legacy::claims::Registered;
@@ -35,8 +35,8 @@ where
     pub fn new(header: H, claims: C) -> Token<H, C> {
         Token {
             raw: None,
-            header: header,
-            claims: claims,
+            header,
+            claims,
         }
     }
 
@@ -62,7 +62,7 @@ where
     /// Make sure to check the token's algorithm before applying.
     pub fn verify<D>(&self, key: &[u8], _digest: D) -> bool
     where
-        D: Input
+        D: Update
             + BlockInput
             + FixedOutput
             + Reset
@@ -89,7 +89,7 @@ where
     /// Generate the signed token from a key and a given hashing algorithm.
     pub fn signed<D>(&self, key: &[u8], _digest: D) -> Result<String, Error>
     where
-        D: Input
+        D: Update
             + BlockInput
             + FixedOutput
             + Reset
@@ -130,13 +130,13 @@ where
     note = "This is usually implemented through a blanket impl, but if needed use the ToBase64 and FromBase64 traits"
 )]
 pub trait Component: Sized {
-    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
+    fn from_base64<Update: ?Sized + AsRef<[u8]>>(raw: &Update) -> Result<Self, Error>;
     fn to_base64(&self) -> Result<String, Error>;
 }
 
 impl<T: ToBase64 + FromBase64> Component for T {
     /// Parse from a string.
-    fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<T, Error> {
+    fn from_base64<Update: ?Sized + AsRef<[u8]>>(raw: &Update) -> Result<T, Error> {
         FromBase64::from_base64(raw)
     }
 
@@ -163,13 +163,13 @@ mod tests {
         {
             assert_eq!(token.header.algorithm, Hs256);
         }
-        assert!(token.verify("secret".as_bytes(), Sha256::new()));
+        assert!(token.verify(b"secret", Sha256::new()));
     }
 
     #[test]
     pub fn roundtrip() {
         let token: Token<Header, Claims> = Default::default();
-        let key = "secret".as_bytes();
+        let key = b"secret";
         let raw = token.signed(key, Sha256::new()).unwrap();
         let same = Token::parse(&*raw).unwrap();
 

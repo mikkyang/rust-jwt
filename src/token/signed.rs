@@ -144,7 +144,7 @@ mod tests {
     use crate::header::Header;
     use crate::token::signed::{SignWithKey, SignWithStore};
     use crate::Token;
-    use hmac::{Hmac, Mac};
+    use hmac::{Hmac, NewMac};
     use sha2::{Sha256, Sha512};
     use std::collections::BTreeMap;
 

@@ -46,7 +46,7 @@ impl JoseHeader for Header {
     }
 
     fn key_id(&self) -> Option<&str> {
-        self.key_id.as_ref().map(|s| &**s)
+        self.key_id.as_deref()
     }
 
     fn type_(&self) -> Option<HeaderType> {

@@ -137,7 +137,7 @@ mod tests {
     use crate::algorithm::VerifyingAlgorithm;
     use crate::error::Error;
     use crate::token::verified::VerifyWithStore;
-    use hmac::{Hmac, Mac};
+    use hmac::{Hmac, NewMac};
     use sha2::{Sha256, Sha512};
     use std::collections::BTreeMap;
 

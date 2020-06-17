@@ -5,7 +5,7 @@
 use base64;
 use crypto_mac::Mac;
 use digest::generic_array::ArrayLength;
-use digest::{BlockInput, FixedOutput, Input, Reset};
+use digest::{BlockInput, FixedOutput, Update, Reset};
 use hmac::Hmac;
 use sha2;
 
@@ -36,7 +36,7 @@ type_level_algorithm_type!(sha2::Sha512, AlgorithmType::Hs512);
 
 impl<D> SigningAlgorithm for Hmac<D>
 where
-    D: Input + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
+    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
     D::BlockSize: ArrayLength<u8>,
     D::OutputSize: ArrayLength<u8>,
 {
@@ -46,15 +46,15 @@ where
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error> {
         let hmac = get_hmac_with_data(&self, header, claims);
-        let mac_result = hmac.result();
-        let code = mac_result.code();
+        let mac_result = hmac.finalize();
+        let code = mac_result.into_bytes();
         Ok(base64::encode_config(&code, base64::URL_SAFE_NO_PAD))
     }
 }
 
 impl<D> VerifyingAlgorithm for Hmac<D>
 where
-    D: Input + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
+    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
     D::BlockSize: ArrayLength<u8>,
     D::OutputSize: ArrayLength<u8>,
 {
@@ -71,15 +71,15 @@ where
 
 fn get_hmac_with_data<D>(hmac: &Hmac<D>, header: &str, claims: &str) -> Hmac<D>
 where
-    D: Input + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
+    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
     D::BlockSize: ArrayLength<u8>,
     D::OutputSize: ArrayLength<u8>,
 {
     let mut hmac = hmac.clone();
     hmac.reset();
-    hmac.input(header.as_bytes());
-    hmac.input(SEPARATOR.as_bytes());
-    hmac.input(claims.as_bytes());
+    hmac.update(header.as_bytes());
+    hmac.update(SEPARATOR.as_bytes());
+    hmac.update(claims.as_bytes());
     hmac
 }
 
@@ -87,7 +87,7 @@ where
 mod tests {
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
     use crate::error::Error;
-    use crypto_mac::Mac;
+    use crypto_mac::NewMac;
     use hmac::Hmac;
     use sha2::Sha256;
 
