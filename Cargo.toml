@@ -1,6 +1,6 @@
 [package]
 name = "jwt"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Michael Yang <mikkyangg@gmail.com>"]
 description = "JSON Web Token library"
 documentation = "http://mikkyang.github.io/rust-jwt/doc/jwt/index.html"
