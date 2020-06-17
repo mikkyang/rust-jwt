@@ -5,7 +5,7 @@
 use base64;
 use crypto_mac::Mac;
 use digest::generic_array::ArrayLength;
-use digest::{BlockInput, FixedOutput, Update, Reset};
+use digest::{BlockInput, FixedOutput, Reset, Update};
 use hmac::Hmac;
 use sha2;
 
