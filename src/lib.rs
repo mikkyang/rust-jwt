@@ -28,7 +28,7 @@
 //! # try_main().unwrap()
 //! ```
 //! #### Verification
-//! Claims can be any `serde::de::DeserializeOwned` type, usually derived with
+//! Claims can be any `serde::Deserialize` type, usually derived with
 //! `serde_derive`.
 //! ```rust
 //! extern crate hmac;
@@ -80,7 +80,7 @@
 //! # try_main().unwrap()
 //! ```
 //! #### Verification
-//! Both header and claims have to implement `serde::de::DeserializeOwned`.
+//! Both header and claims have to implement `serde::Deserialize`.
 //! ```rust
 //! extern crate hmac;
 //! extern crate sha2;
@@ -201,7 +201,7 @@ impl<T: Serialize> ToBase64 for T {
 /// be either owned if the header is dynamic, or it can be borrowed if the
 /// header is a static, pre-computed value. It is implemented automatically
 /// for every type that implements
-/// [DeserializeOwned](../../serde/de/trait.DeserializeOwned.html) for
+/// [DeserializeOwned](../../serde/trait.Deserialize.html) for
 /// the base64 encoded JSON representation.
 pub trait FromBase64: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
