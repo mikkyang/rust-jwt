@@ -122,8 +122,7 @@ extern crate sha2;
 #[cfg(doctest)]
 doctest!("../README.md");
 
-use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 #[cfg(feature = "openssl")]
@@ -208,7 +207,7 @@ pub trait FromBase64: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
 }
 
-impl<T: DeserializeOwned + Sized> FromBase64 for T {
+impl<T: for<'de> Deserialize<'de> + Sized> FromBase64 for T {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error> {
         let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
         Ok(serde_json::from_slice(&json_bytes)?)
