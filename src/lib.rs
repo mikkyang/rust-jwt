@@ -28,7 +28,7 @@
 //! # try_main().unwrap()
 //! ```
 //! #### Verification
-//! Claims can be any `serde::de::DeserializeOwned` type, usually derived with
+//! Claims can be any `serde::Deserialize` type, usually derived with
 //! `serde_derive`.
 //! ```rust
 //! extern crate hmac;
@@ -80,7 +80,7 @@
 //! # try_main().unwrap()
 //! ```
 //! #### Verification
-//! Both header and claims have to implement `serde::de::DeserializeOwned`.
+//! Both header and claims have to implement `serde::Deserialize`.
 //! ```rust
 //! extern crate hmac;
 //! extern crate sha2;
@@ -122,8 +122,7 @@ extern crate sha2;
 #[cfg(doctest)]
 doctest!("../README.md");
 
-use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 #[cfg(feature = "openssl")]
@@ -202,13 +201,13 @@ impl<T: Serialize> ToBase64 for T {
 /// be either owned if the header is dynamic, or it can be borrowed if the
 /// header is a static, pre-computed value. It is implemented automatically
 /// for every type that implements
-/// [DeserializeOwned](../../serde/de/trait.DeserializeOwned.html) for
+/// [DeserializeOwned](../../serde/trait.Deserialize.html) for
 /// the base64 encoded JSON representation.
 pub trait FromBase64: Sized {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error>;
 }
 
-impl<T: DeserializeOwned + Sized> FromBase64 for T {
+impl<T: for<'de> Deserialize<'de> + Sized> FromBase64 for T {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error> {
         let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
         Ok(serde_json::from_slice(&json_bytes)?)

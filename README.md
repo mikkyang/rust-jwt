@@ -46,7 +46,7 @@ assert_eq!(token_str, "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vf
 
 #### Verification
 
-Claims can be any `serde::de::DeserializeOwned` type, usually derived with
+Claims can be any `serde::Deserialize` type, usually derived with
 `serde_derive`.
 
 ```rust
@@ -102,7 +102,7 @@ assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPU
 
 #### Verification
 
-Both header and claims have to implement `serde::de::DeserializeOwned`.
+Both header and claims have to implement `serde::Deserialize`.
 
 ```rust
 extern crate hmac;
