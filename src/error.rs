@@ -1,3 +1,4 @@
+use self::Error::*;
 use crate::algorithm::AlgorithmType;
 use base64::DecodeError;
 use crypto_mac::{InvalidKeyLength, MacError};
@@ -23,19 +24,19 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match *self {
-            Error::AlgorithmMismatch(a, b) => {
+            AlgorithmMismatch(a, b) => {
                 write!(f, "Expected algorithm type {:?} but found {:?}", a, b)
             }
-            Error::NoKeyId => write!(f, "No key id found"),
-            Error::NoKeyWithKeyId(ref kid) => write!(f, "Key with key id {} not found", kid),
-            Error::Format => write!(f, "Format"),
-            Error::Base64(ref x) => write!(f, "{}", x),
-            Error::Json(ref x) => write!(f, "{}", x),
-            Error::Utf8(ref x) => write!(f, "{}", x),
-            Error::RustCryptoMac(ref x) => write!(f, "{}", x),
-            Error::RustCryptoMacKeyLength(ref x) => write!(f, "{}", x),
+            NoKeyId => write!(f, "No key id found"),
+            NoKeyWithKeyId(ref kid) => write!(f, "Key with key id {} not found", kid),
+            Format => write!(f, "Format"),
+            Base64(ref x) => write!(f, "{}", x),
+            Json(ref x) => write!(f, "{}", x),
+            Utf8(ref x) => write!(f, "{}", x),
+            RustCryptoMac(ref x) => write!(f, "{}", x),
+            RustCryptoMacKeyLength(ref x) => write!(f, "{}", x),
             #[cfg(feature = "openssl")]
-            Error::OpenSsl(ref x) => write!(f, "{}", x),
+            OpenSsl(ref x) => write!(f, "{}", x),
         }
     }
 }
@@ -50,10 +51,10 @@ macro_rules! error_wrap {
     };
 }
 
-error_wrap!(DecodeError, Error::Base64);
-error_wrap!(JsonError, Error::Json);
-error_wrap!(FromUtf8Error, Error::Utf8);
-error_wrap!(MacError, Error::RustCryptoMac);
-error_wrap!(InvalidKeyLength, Error::RustCryptoMacKeyLength);
+error_wrap!(DecodeError, Base64);
+error_wrap!(JsonError, Json);
+error_wrap!(FromUtf8Error, Utf8);
+error_wrap!(MacError, RustCryptoMac);
+error_wrap!(InvalidKeyLength, RustCryptoMacKeyLength);
 #[cfg(feature = "openssl")]
 error_wrap!(openssl::error::ErrorStack, Error::OpenSsl);
