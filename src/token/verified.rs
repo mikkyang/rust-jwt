@@ -125,9 +125,13 @@ impl<'a, H: FromBase64, C: FromBase64> Token<H, C, Unverified<'a>> {
 
 pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
     let mut components = token.split(SEPARATOR);
-    let header = components.next().ok_or(Error::Format)?;
-    let claims = components.next().ok_or(Error::Format)?;
-    let signature = components.next().ok_or(Error::Format)?;
+    let header = components.next().ok_or(Error::NoHeaderComponent)?;
+    let claims = components.next().ok_or(Error::NoClaimsComponent)?;
+    let signature = components.next().ok_or(Error::NoSignatureComponent)?;
+
+    if components.next().is_some() {
+        return Err(Error::TooManyComponents);
+    }
 
     Ok([header, claims, signature])
 }
