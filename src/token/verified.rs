@@ -131,9 +131,13 @@ impl<'a, H: FromBase64, C: FromBase64> Token<H, C, Unverified<'a>> {
 
 pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
     let mut components = token.split(SEPARATOR);
-    let header = components.next().ok_or(Error::Format)?;
-    let claims = components.next().ok_or(Error::Format)?;
-    let signature = components.next().ok_or(Error::Format)?;
+    let header = components.next().ok_or(Error::NoHeaderComponent)?;
+    let claims = components.next().ok_or(Error::NoClaimsComponent)?;
+    let signature = components.next().ok_or(Error::NoSignatureComponent)?;
+
+    if components.next().is_some() {
+        return Err(Error::TooManyComponents);
+    }
 
     Ok([header, claims, signature])
 }
@@ -142,7 +146,7 @@ pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
 mod tests {
     use crate::algorithm::VerifyingAlgorithm;
     use crate::error::Error;
-    use crate::token::verified::VerifyWithStore;
+    use crate::token::verified::{VerifyWithKey, VerifyWithStore};
     use hmac::{Hmac, NewMac};
     use sha2::{Sha256, Sha512};
     use std::collections::BTreeMap;
@@ -150,6 +154,32 @@ mod tests {
     #[derive(Deserialize)]
     struct Claims {
         name: String,
+    }
+
+    #[test]
+    pub fn component_errors() {
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
+
+        let no_claims = "header";
+        match VerifyWithKey::<String>::verify_with_key(no_claims, &key) {
+            Err(Error::NoClaimsComponent) => (),
+            Ok(s) => panic!("Verify should not have succeeded with output {:?}", s),
+            x => panic!("Incorrect error type {:?}", x),
+        }
+
+        let no_signature = "header.claims";
+        match VerifyWithKey::<String>::verify_with_key(no_signature, &key) {
+            Err(Error::NoSignatureComponent) => (),
+            Ok(s) => panic!("Verify should not have succeeded with output {:?}", s),
+            x => panic!("Incorrect error type {:?}", x),
+        }
+
+        let too_many = "header.claims.signature.";
+        match VerifyWithKey::<String>::verify_with_key(too_many, &key) {
+            Err(Error::TooManyComponents) => (),
+            Ok(s) => panic!("Verify should not have succeeded with output {:?}", s),
+            x => panic!("Incorrect error type {:?}", x),
+        }
     }
 
     #[test]
