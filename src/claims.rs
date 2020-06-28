@@ -43,7 +43,7 @@ pub struct RegisteredClaims {
     #[serde(rename = "nbf", skip_serializing_if = "Option::is_none")]
     pub not_before: Option<SecondsSinceEpoch>,
 
-    #[serde(rename = "nbf", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "iat", skip_serializing_if = "Option::is_none")]
     pub issued_at: Option<SecondsSinceEpoch>,
 
     #[serde(rename = "jti", skip_serializing_if = "Option::is_none")]
