@@ -140,7 +140,7 @@ pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
 mod tests {
     use crate::algorithm::VerifyingAlgorithm;
     use crate::error::Error;
-    use crate::token::verified::VerifyWithStore;
+    use crate::token::verified::{VerifyWithKey, VerifyWithStore};
     use hmac::{Hmac, NewMac};
     use sha2::{Sha256, Sha512};
     use std::collections::BTreeMap;
@@ -148,6 +148,32 @@ mod tests {
     #[derive(Deserialize)]
     struct Claims {
         name: String,
+    }
+
+    #[test]
+    pub fn component_errors() {
+        let key: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
+
+        let no_claims = "header";
+        match VerifyWithKey::<String>::verify_with_key(no_claims, &key) {
+            Err(Error::NoClaimsComponent) => (),
+            Ok(s) => panic!("Verify should not have succeeded with output {:?}", s),
+            x => panic!("Incorrect error type {:?}", x),
+        }
+
+        let no_signature = "header.claims";
+        match VerifyWithKey::<String>::verify_with_key(no_signature, &key) {
+            Err(Error::NoSignatureComponent) => (),
+            Ok(s) => panic!("Verify should not have succeeded with output {:?}", s),
+            x => panic!("Incorrect error type {:?}", x),
+        }
+
+        let too_many = "header.claims.signature.";
+        match VerifyWithKey::<String>::verify_with_key(too_many, &key) {
+            Err(Error::TooManyComponents) => (),
+            Ok(s) => panic!("Verify should not have succeeded with output {:?}", s),
+            x => panic!("Incorrect error type {:?}", x),
+        }
     }
 
     #[test]
