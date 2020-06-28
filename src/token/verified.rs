@@ -7,7 +7,7 @@ use crate::{FromBase64, Token, SEPARATOR};
 
 /// Allow objects to be verified with a key.
 pub trait VerifyWithKey<T> {
-    fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<T, Error>;
+    fn verify_with_key(self, key: &impl VerifyingAlgorithm) -> Result<T, Error>;
 }
 
 /// Allow objects to be verified with a store.
@@ -19,7 +19,10 @@ pub trait VerifyWithStore<T> {
 }
 
 impl<'a, H: JoseHeader, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, Unverified<'a>> {
-    fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<Token<H, C, Verified>, Error> {
+    fn verify_with_key(
+        self,
+        key: &impl VerifyingAlgorithm,
+    ) -> Result<Token<H, C, Verified>, Error> {
         let header = self.header() as &dyn JoseHeader;
         let header_algorithm = header.algorithm_type();
         let key_algorithm = key.algorithm_type();
@@ -64,7 +67,10 @@ where
     H: FromBase64 + JoseHeader,
     C: FromBase64,
 {
-    fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<Token<H, C, Verified>, Error> {
+    fn verify_with_key(
+        self,
+        key: &impl VerifyingAlgorithm,
+    ) -> Result<Token<H, C, Verified>, Error> {
         let unverified = Token::parse_unverified(self)?;
         unverified.verify_with_key(key)
     }
@@ -86,7 +92,7 @@ where
 }
 
 impl<'a, C: FromBase64> VerifyWithKey<C> for &'a str {
-    fn verify_with_key(self, key: &dyn VerifyingAlgorithm) -> Result<C, Error> {
+    fn verify_with_key(self, key: &impl VerifyingAlgorithm) -> Result<C, Error> {
         let token: Token<Header, C, _> = self.verify_with_key(key)?;
         Ok(token.claims)
     }

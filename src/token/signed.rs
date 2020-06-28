@@ -7,7 +7,7 @@ use crate::{ToBase64, Token, SEPARATOR};
 
 /// Allow objects to be signed with a key.
 pub trait SignWithKey<T> {
-    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<T, Error>;
+    fn sign_with_key(self, key: &impl SigningAlgorithm) -> Result<T, Error>;
 }
 
 /// Allow objects to be signed with a store.
@@ -48,7 +48,7 @@ where
 }
 
 impl<C: ToBase64> SignWithKey<String> for C {
-    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<String, Error> {
+    fn sign_with_key(self, key: &impl SigningAlgorithm) -> Result<String, Error> {
         let header = Header {
             algorithm: key.algorithm_type(),
             ..Default::default()
@@ -85,7 +85,7 @@ where
     H: ToBase64 + JoseHeader,
     C: ToBase64,
 {
-    fn sign_with_key(self, key: &dyn SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
+    fn sign_with_key(self, key: &impl SigningAlgorithm) -> Result<Token<H, C, Signed>, Error> {
         let header_algorithm = self.header.algorithm_type();
         let key_algorithm = key.algorithm_type();
         if header_algorithm != key_algorithm {
