@@ -23,7 +23,7 @@ impl<'a, H: JoseHeader, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, 
         self,
         key: &impl VerifyingAlgorithm,
     ) -> Result<Token<H, C, Verified>, Error> {
-        let header = self.header() as &dyn JoseHeader;
+        let header = self.header();
         let header_algorithm = header.algorithm_type();
         let key_algorithm = key.algorithm_type();
         if header_algorithm != key_algorithm {
@@ -52,7 +52,7 @@ impl<'a, H: JoseHeader, C> VerifyWithStore<Token<H, C, Verified>> for Token<H, C
         S: Store<Algorithm = A>,
         A: VerifyingAlgorithm,
     {
-        let header = self.header() as &dyn JoseHeader;
+        let header = self.header();
         let key_id = header.key_id().ok_or(Error::NoKeyId)?;
         let key = store
             .get(key_id)
