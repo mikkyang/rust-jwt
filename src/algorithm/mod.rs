@@ -4,14 +4,13 @@
 //! module. The `none` algorithm is explicitly not supported.
 //! ## Examples
 //! ```
-//! extern crate hmac;
-//! extern crate sha2;
-//!
 //! use hmac::{Hmac, NewMac};
 //! use sha2::Sha256;
 //!
 //! let hs256_key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
 //! ```
+
+use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 

@@ -1,10 +1,12 @@
-use self::Error::*;
-use crate::algorithm::AlgorithmType;
+use std::fmt;
+use std::string::FromUtf8Error;
+
 use base64::DecodeError;
 use crypto_mac::{InvalidKeyLength, MacError};
 use serde_json::Error as JsonError;
-use std::fmt;
-use std::string::FromUtf8Error;
+
+use self::Error::*;
+use crate::algorithm::AlgorithmType;
 
 #[derive(Debug)]
 pub enum Error {

@@ -1,7 +1,8 @@
 //! Convenience structs for commonly defined fields in claims.
 
-use serde_json;
 use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
 
 /// Generic [JWT claims](https://tools.ietf.org/html/rfc7519#page-8) with
 /// defined fields for registered and private claims.

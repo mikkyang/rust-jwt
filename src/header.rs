@@ -1,9 +1,12 @@
 //! Convenience structs for commonly defined fields in headers.
 
+use std::borrow::Cow;
+
+use serde::{Deserialize, Serialize};
+
 use crate::algorithm::AlgorithmType;
 use crate::error::Error;
 use crate::ToBase64;
-use std::borrow::Cow;
 
 /// A trait for any header than can conform to the
 /// [JWT specification](https://tools.ietf.org/html/rfc7519#page-11).

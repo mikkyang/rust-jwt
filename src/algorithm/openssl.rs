@@ -3,9 +3,6 @@
 //! can only be used for verification.
 //! ## Examples
 //! ```
-//! extern crate jwt;
-//! extern crate openssl;
-//!
 //! use jwt::PKeyWithDigest;
 //! use openssl::hash::MessageDigest;
 //! use openssl::pkey::PKey;
@@ -14,12 +11,12 @@
 //!     digest: MessageDigest::sha256(),
 //!     key: PKey::public_key_from_pem(pem).unwrap(),
 //! };
-//!
 //! ```
 
 use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
 use crate::SEPARATOR;
+
 use openssl::bn::BigNum;
 use openssl::ecdsa::EcdsaSig;
 use openssl::hash::MessageDigest;
@@ -112,11 +109,12 @@ fn jose_to_der(jose: &[u8]) -> Result<Vec<u8>, Error> {
 #[cfg(test)]
 mod tests {
     use crate::algorithm::openssl::PKeyWithDigest;
-    use crate::algorithm::AlgorithmType::{self, *};
+    use crate::algorithm::AlgorithmType::*;
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
     use crate::error::Error;
     use crate::header::PrecomputedAlgorithmOnlyHeader as AlgOnly;
     use crate::ToBase64;
+
     use openssl::hash::MessageDigest;
     use openssl::pkey::PKey;
 

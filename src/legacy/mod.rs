@@ -1,12 +1,13 @@
 //! Legacy support.
 
+use digest::generic_array::ArrayLength;
+use digest::*;
+use hmac::{Hmac, NewMac};
+
 use crate::algorithm::{self, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
 use crate::token::verified::split_components;
 use crate::{FromBase64, ToBase64, SEPARATOR};
-use digest::generic_array::ArrayLength;
-use digest::*;
-use hmac::{Hmac, NewMac};
 
 pub use crate::legacy::claims::Claims;
 pub use crate::legacy::claims::Registered;

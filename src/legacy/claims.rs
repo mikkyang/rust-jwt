@@ -1,5 +1,7 @@
-use serde_json::Value as Json;
 use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
+use serde_json::Value as Json;
 
 #[deprecated(note = "Please use jwt::Claims instead")]
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]

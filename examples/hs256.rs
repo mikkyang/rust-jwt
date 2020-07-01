@@ -1,11 +1,6 @@
-extern crate hmac;
-extern crate jwt;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::{RegisteredClaims, SignWithKey, VerifyWithKey};
 use sha2::Sha256;
-use std::default::Default;
 
 fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
     // Dummy auth

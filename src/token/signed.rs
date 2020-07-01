@@ -139,14 +139,17 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
+    use hmac::{Hmac, NewMac};
+    use serde::Serialize;
+    use sha2::{Sha256, Sha512};
+
     use crate::algorithm::AlgorithmType;
     use crate::error::Error;
     use crate::header::Header;
     use crate::token::signed::{SignWithKey, SignWithStore};
     use crate::Token;
-    use hmac::{Hmac, NewMac};
-    use sha2::{Sha256, Sha512};
-    use std::collections::BTreeMap;
 
     #[derive(Serialize)]
     struct Claims<'a> {

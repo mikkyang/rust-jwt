@@ -1,5 +1,7 @@
 use std::default::Default;
 
+use serde::{Deserialize, Serialize};
+
 #[deprecated(note = "Please use jwt::Header instead")]
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Header {
