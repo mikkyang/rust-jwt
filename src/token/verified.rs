@@ -144,12 +144,15 @@ pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
+    use hmac::{Hmac, NewMac};
+    use serde::Deserialize;
+    use sha2::{Sha256, Sha512};
+
     use crate::algorithm::VerifyingAlgorithm;
     use crate::error::Error;
     use crate::token::verified::{VerifyWithKey, VerifyWithStore};
-    use hmac::{Hmac, NewMac};
-    use sha2::{Sha256, Sha512};
-    use std::collections::BTreeMap;
 
     #[derive(Deserialize)]
     struct Claims {

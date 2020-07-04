@@ -1,13 +1,7 @@
-extern crate hmac;
-extern crate jwt;
-#[macro_use]
-extern crate serde_derive;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::{Header, SignWithKey, Token, VerifyWithKey};
+use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use std::default::Default;
 
 #[derive(Default, Deserialize, Serialize)]
 struct Custom {

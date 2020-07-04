@@ -8,9 +8,6 @@
 //! Claims can be any `serde::Serialize` type, usually derived with
 //! `serde_derive`.
 //! ```rust
-//! extern crate hmac;
-//! extern crate sha2;
-//!
 //! use hmac::{Hmac, NewMac};
 //! use jwt::SignWithKey;
 //! use sha2::Sha256;
@@ -31,9 +28,6 @@
 //! Claims can be any `serde::Deserialize` type, usually derived with
 //! `serde_derive`.
 //! ```rust
-//! extern crate hmac;
-//! extern crate sha2;
-//!
 //! use hmac::{Hmac, NewMac};
 //! use jwt::VerifyWithKey;
 //! use sha2::Sha256;
@@ -56,9 +50,6 @@
 //! #### Signing
 //! Both header and claims have to implement `serde::Serialize`.
 //! ```rust
-//! extern crate hmac;
-//! extern crate sha2;
-//!
 //! use hmac::{Hmac, NewMac};
 //! use jwt::{AlgorithmType, Header, SignWithKey, Token};
 //! use sha2::Sha384;
@@ -82,9 +73,6 @@
 //! #### Verification
 //! Both header and claims have to implement `serde::Deserialize`.
 //! ```rust
-//! extern crate hmac;
-//! extern crate sha2;
-//!
 //! use hmac::{Hmac, NewMac};
 //! use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
 //! use sha2::Sha384;
@@ -104,26 +92,14 @@
 //! # try_main().unwrap()
 //! ```
 
-extern crate base64;
-extern crate crypto_mac;
-extern crate digest;
-#[cfg(doctest)]
-#[macro_use]
-extern crate doc_comment;
-extern crate hmac;
-#[cfg(feature = "openssl")]
-extern crate openssl;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate sha2;
-
 #[cfg(doctest)]
 doctest!("../README.md");
 
-use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+
+#[cfg(doctest)]
+use doc_comment::doctest;
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "openssl")]
 pub use crate::algorithm::openssl::PKeyWithDigest;

@@ -26,10 +26,6 @@ Claims can be any `serde::Serialize` type, usually derived with
 `serde_derive`.
 
 ```rust
-extern crate hmac;
-extern crate jwt;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::SignWithKey;
 use sha2::Sha256;
@@ -50,10 +46,6 @@ Claims can be any `serde::Deserialize` type, usually derived with
 `serde_derive`.
 
 ```rust
-extern crate hmac;
-extern crate jwt;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
@@ -78,10 +70,6 @@ fields, but any type that implements `JoseHeader` can be used.
 Both header and claims have to implement `serde::Serialize`.
 
 ```rust
-extern crate hmac;
-extern crate jwt;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::{AlgorithmType, Header, SignWithKey, Token};
 use sha2::Sha384;
@@ -105,10 +93,6 @@ assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPU
 Both header and claims have to implement `serde::Deserialize`.
 
 ```rust
-extern crate hmac;
-extern crate jwt;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
 use sha2::Sha384;
@@ -137,10 +121,6 @@ For the trait `VerifyWithStore`, the key id from the deserialized header will be
 to use.
 
 ```rust
-extern crate hmac;
-extern crate jwt;
-extern crate sha2;
-
 use hmac::{Hmac, NewMac};
 use jwt::{Header, SignWithStore, Token, VerifyWithStore};
 use sha2::Sha512;

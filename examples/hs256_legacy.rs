@@ -1,12 +1,8 @@
 #![allow(deprecated)]
 
-extern crate jwt;
-extern crate sha2;
-
 use jwt::legacy::{Header, Registered, Token};
 use sha2::Digest;
 use sha2::Sha256;
-use std::default::Default;
 
 fn new_token(user_id: &str, password: &str) -> Option<String> {
     // Dummy auth
