@@ -36,13 +36,15 @@ impl<'a, H: JoseHeader, C> VerifyWithKey<Token<H, C, Verified>> for Token<H, C, 
             signature_str,
         } = self.signature;
 
-        key.verify(header_str, claims_str, signature_str)?;
-
-        Ok(Token {
-            header: self.header,
-            claims: self.claims,
-            signature: Verified,
-        })
+        if key.verify(header_str, claims_str, signature_str)? {
+            Ok(Token {
+                header: self.header,
+                claims: self.claims,
+                signature: Verified,
+            })
+        } else {
+            Err(Error::InvalidSignature)
+        }
     }
 }
 
@@ -157,6 +159,43 @@ mod tests {
     #[derive(Deserialize)]
     struct Claims {
         name: String,
+    }
+
+    #[test]
+    #[cfg(feature = "openssl")]
+    pub fn token_can_not_be_verified_with_a_wrong_key() -> Result<(), Error> {
+        use crate::{token::signed::SignWithKey, AlgorithmType, Header, PKeyWithDigest, Token};
+        use openssl::{hash::MessageDigest, pkey::PKey};
+
+        let private_pem = include_bytes!("../../test/rs256-private.pem");
+        let public_pem = include_bytes!("../../test/rs256-public-2.pem");
+
+        let rs256_private_key = PKeyWithDigest {
+            digest: MessageDigest::sha256(),
+            key: PKey::private_key_from_pem(private_pem).unwrap(),
+        };
+        let rs256_public_key = PKeyWithDigest {
+            digest: MessageDigest::sha256(),
+            key: PKey::public_key_from_pem(public_pem).unwrap(),
+        };
+
+        let header = Header {
+            algorithm: AlgorithmType::Rs256,
+            ..Default::default()
+        };
+        let mut claims = BTreeMap::new();
+        claims.insert("sub", "someone");
+
+        let signed_token = Token::new(header, claims).sign_with_key(&rs256_private_key)?;
+        let token_str = signed_token.as_str();
+        let unverified_token: Token<Header, BTreeMap<String, String>, _> =
+            Token::parse_unverified(token_str)?;
+        let verified_token_result = unverified_token.verify_with_key(&rs256_public_key);
+        assert!(verified_token_result.is_err());
+        match verified_token_result.err().unwrap() {
+            Error::InvalidSignature => Ok(()),
+            other => panic!("Wrong error type: {:?}", other),
+        }
     }
 
     #[test]
