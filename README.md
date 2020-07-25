@@ -11,7 +11,7 @@ A JSON Web Token library.
 
 ## Usage
 
-Note, for legacy support (not recommended), import from `jwt::legacy` instead
+Note, for legacy support (not recommended, only supported up until 0.9.0), import from `jwt::legacy` instead
 of directly from `jwt`. Everything should work as before, with some small
 improvements.
 
