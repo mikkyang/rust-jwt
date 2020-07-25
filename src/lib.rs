@@ -117,8 +117,6 @@ pub mod algorithm;
 pub mod claims;
 pub mod error;
 pub mod header;
-#[allow(deprecated)]
-pub mod legacy;
 pub mod token;
 
 const SEPARATOR: &str = ".";
