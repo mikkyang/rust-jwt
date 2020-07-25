@@ -3,13 +3,16 @@ name = "jwt"
 version = "0.10.0"
 authors = ["Michael Yang <mikkyangg@gmail.com>"]
 description = "JSON Web Token library"
-documentation = "http://mikkyang.github.io/rust-jwt/doc/jwt/index.html"
+documentation = "https://docs.rs/jwt"
 homepage = "http://github.com/mikkyang/rust-jwt"
 repository = "http://github.com/mikkyang/rust-jwt"
 readme = "README.md"
 keywords = ["JWT", "token", "web"]
 license = "MIT"
 edition = "2018"
+
+[package.metadata.docs.rs]
+features = ["openssl"]
 
 [dependencies]
 base64 = "0.12"

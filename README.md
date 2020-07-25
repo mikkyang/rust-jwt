@@ -1,17 +1,17 @@
-# JWT [![Build Status]][travis] [![Latest Version]][crates.io]
+# JWT [![Build Status]][travis] [![Latest Version]][crates.io] [![Documentation]][docs.rs]
 
 [Build Status]: https://api.travis-ci.org/mikkyang/rust-jwt.svg?branch=master
 [travis]: https://travis-ci.org/mikkyang/rust-jwt
 [Latest Version]: https://img.shields.io/crates/v/jwt.svg
 [crates.io]: https://crates.io/crates/jwt
+[Documentation]: https://img.shields.io/badge/rust-documentation-blue.svg
+[docs.rs]: https://docs.rs/jwt
 
 A JSON Web Token library.
 
-[Documentation](http://mikkyang.github.io/rust-jwt/doc/jwt/index.html)
-
 ## Usage
 
-Note, for legacy support (not recommended), import from `jwt::legacy` instead
+Note, for legacy support (not recommended, only supported up until 0.9.0), import from `jwt::legacy` instead
 of directly from `jwt`. Everything should work as before, with some small
 improvements.
 
