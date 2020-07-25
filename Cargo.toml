@@ -11,6 +11,9 @@ keywords = ["JWT", "token", "web"]
 license = "MIT"
 edition = "2018"
 
+[package.metadata.docs.rs]
+features = ["openssl"]
+
 [dependencies]
 base64 = "0.12"
 crypto-mac = "0.8"
