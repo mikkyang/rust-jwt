@@ -1,4 +1,4 @@
-# JWT [![Build Status]][travis] [![Latest Version]][crates.io] [![Documentation][docs.rs]]
+# JWT [![Build Status]][travis] [![Latest Version]][crates.io] [![Documentation]][docs.rs]
 
 [Build Status]: https://api.travis-ci.org/mikkyang/rust-jwt.svg?branch=master
 [travis]: https://travis-ci.org/mikkyang/rust-jwt
