@@ -1,6 +1,6 @@
 [package]
 name = "jwt"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["Michael Yang <mikkyangg@gmail.com>"]
 description = "JSON Web Token library"
 documentation = "https://docs.rs/jwt"
