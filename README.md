@@ -110,8 +110,7 @@ assert_eq!(claims["sub"], "someone");
 ```
 
 ### Store
-A `Store` can be used to represent a collection of keys indexed by key id. By default this is implemented
-for all `Index<&str>` traits.
+A `Store` can be used to represent a collection of keys indexed by key id. Right now, this is only automatically implemented for `BTreeMap` and `HashMap` with `Borrow<str>` keys. If specialization lands then it will be implemented for all `Index<&str>` traits as it was before.
 
 For the trait `SignWithStore`, the key id will be automatically added to the header for bare claims.
 Because claims do not have a way to specify key id, a tuple of key id and claims is necessary. For
