@@ -147,6 +147,7 @@ pub(crate) fn split_components(token: &str) -> Result<[&str; 3], Error> {
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, HashMap};
+    use std::iter::FromIterator;
 
     use hmac::{Hmac, NewMac};
     use serde::Deserialize;
@@ -224,17 +225,35 @@ mod tests {
         }
     }
 
-    #[test]
-    pub fn verify_claims_with_b_tree_map() -> Result<(), Error> {
-        let mut key_store = BTreeMap::new();
+    // Test stores
+
+    fn create_test_data<T>() -> Result<T, Error>
+    where
+        T: FromIterator<(&'static str, Box<dyn VerifyingAlgorithm>)>,
+    {
+        // Test two different algorithms in the same store
         let key1: Hmac<Sha256> = Hmac::new_varkey(b"first")?;
         let key2: Hmac<Sha512> = Hmac::new_varkey(b"second")?;
-        key_store.insert("first_key", Box::new(key1) as Box<dyn VerifyingAlgorithm>);
-        key_store.insert("second_key", Box::new(key2) as Box<dyn VerifyingAlgorithm>);
 
-        let claims: Claims =
-        "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A"
-            .verify_with_store(&key_store)?;
+        let name_to_key_tuples = vec![
+            ("first_key", Box::new(key1) as Box<dyn VerifyingAlgorithm>),
+            ("second_key", Box::new(key2) as Box<dyn VerifyingAlgorithm>),
+        ]
+        .into_iter()
+        .collect();
+
+        Ok(name_to_key_tuples)
+    }
+
+    // Header   {"alg":"HS512","kid":"second_key"}
+    // Claims   {"name":"Jane Doe"}
+    const JANE_DOE_TOKEN: &'static str = "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A";
+
+    #[test]
+    pub fn verify_claims_with_b_tree_map() -> Result<(), Error> {
+        let key_store: BTreeMap<_, _> = create_test_data()?;
+
+        let claims: Claims = JANE_DOE_TOKEN.verify_with_store(&key_store)?;
 
         assert_eq!(claims.name, "Jane Doe");
         Ok(())
@@ -242,15 +261,9 @@ mod tests {
 
     #[test]
     pub fn verify_claims_with_hash_map() -> Result<(), Error> {
-        let mut key_store = HashMap::new();
-        let key1: Hmac<Sha256> = Hmac::new_varkey(b"first")?;
-        let key2: Hmac<Sha512> = Hmac::new_varkey(b"second")?;
-        key_store.insert("first_key", Box::new(key1) as Box<dyn VerifyingAlgorithm>);
-        key_store.insert("second_key", Box::new(key2) as Box<dyn VerifyingAlgorithm>);
+        let key_store: HashMap<_, _> = create_test_data()?;
 
-        let claims: Claims =
-        "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A"
-            .verify_with_store(&key_store)?;
+        let claims: Claims = JANE_DOE_TOKEN.verify_with_store(&key_store)?;
 
         assert_eq!(claims.name, "Jane Doe");
         Ok(())
