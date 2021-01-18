@@ -157,7 +157,7 @@ mod tests {
     use crate::error::Error;
     use crate::token::verified::{VerifyWithKey, VerifyWithStore};
 
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Claims {
         name: String,
     }
@@ -247,13 +247,13 @@ mod tests {
 
     // Header   {"alg":"HS512","kid":"second_key"}
     // Claims   {"name":"Jane Doe"}
-    const JANE_DOE_TOKEN: &'static str = "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A";
+    const JANE_DOE_SECOND_KEY_TOKEN: &'static str = "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A";
 
     #[test]
     pub fn verify_claims_with_b_tree_map() -> Result<(), Error> {
         let key_store: BTreeMap<_, _> = create_test_data()?;
 
-        let claims: Claims = JANE_DOE_TOKEN.verify_with_store(&key_store)?;
+        let claims: Claims = JANE_DOE_SECOND_KEY_TOKEN.verify_with_store(&key_store)?;
 
         assert_eq!(claims.name, "Jane Doe");
         Ok(())
@@ -263,9 +263,27 @@ mod tests {
     pub fn verify_claims_with_hash_map() -> Result<(), Error> {
         let key_store: HashMap<_, _> = create_test_data()?;
 
-        let claims: Claims = JANE_DOE_TOKEN.verify_with_store(&key_store)?;
+        let claims: Claims = JANE_DOE_SECOND_KEY_TOKEN.verify_with_store(&key_store)?;
 
         assert_eq!(claims.name, "Jane Doe");
+        Ok(())
+    }
+
+    #[test]
+    pub fn verify_claims_with_missing_key() -> Result<(), Error> {
+        let key_store: BTreeMap<_, _> = create_test_data()?;
+        let missing_key_token = "eyJhbGciOiJIUzUxMiIsImtpZCI6Im1pc3Npbmdfa2V5In0.eyJuYW1lIjoiSmFuZSBEb2UifQ.MC9hmBjv9OABdv5bsjVdwUgPOhvpe6a924KU-U7PjVWF2N-f_HXa1PVWtDVJ-dqt1GKutVwixrz7hgVvE_G5_w";
+
+        let should_fail_claims: Result<Claims, _> = missing_key_token.verify_with_store(&key_store);
+
+        match should_fail_claims {
+            Err(Error::NoKeyWithKeyId(key_id)) => assert_eq!(key_id, "missing_key"),
+            _ => panic!(
+                "Missing key should have triggered specific error but returned {:?}",
+                should_fail_claims
+            ),
+        }
+
         Ok(())
     }
 }
