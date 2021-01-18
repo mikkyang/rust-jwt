@@ -1,4 +1,6 @@
-use std::ops::Index;
+use std::borrow::Borrow;
+use std::collections::{BTreeMap, HashMap};
+use std::hash::Hash;
 
 /// A store of keys that can be retrieved by key id.
 pub trait Store {
@@ -7,13 +9,24 @@ pub trait Store {
     fn get(&self, key_id: &str) -> Option<&Self::Algorithm>;
 }
 
-impl<T, A> Store for T
+impl<K, A> Store for BTreeMap<K, A>
 where
-    for<'a> T: Index<&'a str, Output = A>,
+    K: Borrow<str> + Ord,
 {
     type Algorithm = A;
 
     fn get(&self, key_id: &str) -> Option<&A> {
-        Some(&self[key_id])
+        BTreeMap::get(self, key_id)
+    }
+}
+
+impl<K, A> Store for HashMap<K, A>
+where
+    K: Borrow<str> + Ord + Hash,
+{
+    type Algorithm = A;
+
+    fn get(&self, key_id: &str) -> Option<&A> {
+        HashMap::get(self, key_id)
     }
 }
