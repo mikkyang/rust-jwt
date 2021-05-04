@@ -14,7 +14,7 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
         ..Default::default()
     };
 
-    let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
+    let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret_key").map_err(|_e| "Invalid key")?;
 
     let signed_token = claims.sign_with_key(&key).map_err(|_e| "Sign failed")?;
 
@@ -22,7 +22,7 @@ fn new_token(user_id: &str, password: &str) -> Result<String, &'static str> {
 }
 
 fn login(token: &str) -> Result<String, &'static str> {
-    let key: Hmac<Sha256> = Hmac::new_varkey(b"secret_key").map_err(|_e| "Invalid key")?;
+    let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret_key").map_err(|_e| "Invalid key")?;
     let claims: RegisteredClaims =
         VerifyWithKey::verify_with_key(token, &key).map_err(|_e| "Parse failed")?;
 

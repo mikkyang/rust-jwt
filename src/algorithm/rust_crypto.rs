@@ -95,7 +95,7 @@ mod tests {
         let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
         let expected_signature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
 
-        let signer: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
+        let signer: Hmac<Sha256> = Hmac::new_from_slice(b"secret")?;
         let computed_signature = SigningAlgorithm::sign(&signer, &header, &claims)?;
 
         assert_eq!(computed_signature, expected_signature);
@@ -108,7 +108,7 @@ mod tests {
         let claims = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
         let signature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
 
-        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
+        let verifier: Hmac<Sha256> = Hmac::new_from_slice(b"secret")?;
         assert!(VerifyingAlgorithm::verify(
             &verifier, &header, &claims, &signature
         )?);

@@ -31,7 +31,7 @@ use jwt::SignWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
 
-let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
+let key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret").unwrap();
 let mut claims = BTreeMap::new();
 claims.insert("sub", "someone");
 
@@ -51,7 +51,7 @@ use jwt::VerifyWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
 
-let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
+let key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret").unwrap();
 let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
 
 let claims: BTreeMap<String, String> = token_str.verify_with_key(&key).unwrap();
@@ -75,7 +75,7 @@ use jwt::{AlgorithmType, Header, SignWithKey, Token};
 use sha2::Sha384;
 use std::collections::BTreeMap;
 
-let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+let key: Hmac<Sha384> = Hmac::new_from_slice(b"some-secret").unwrap();
 let header = Header {
     algorithm: AlgorithmType::Hs384,
     ..Default::default()
@@ -98,7 +98,7 @@ use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
 use sha2::Sha384;
 use std::collections::BTreeMap;
 
-let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret").unwrap();
+let key: Hmac<Sha384> = Hmac::new_from_slice(b"some-secret").unwrap();
 let token_str = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_";
 
 let token: Token<Header, BTreeMap<String, String>, _> = VerifyWithKey::verify_with_key(token_str, &key).unwrap();
@@ -126,8 +126,8 @@ use sha2::Sha512;
 use std::collections::BTreeMap;
 
 let mut store: BTreeMap<_, Hmac<Sha512>> = BTreeMap::new();
-store.insert("first_key", Hmac::new_varkey(b"first").unwrap());
-store.insert("second_key", Hmac::new_varkey(b"second").unwrap());
+store.insert("first_key", Hmac::new_from_slice(b"first").unwrap());
+store.insert("second_key", Hmac::new_from_slice(b"second").unwrap());
 
 let mut claims = BTreeMap::new();
 claims.insert("sub", "someone");

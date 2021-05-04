@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     pub fn component_errors() {
-        let key: Hmac<Sha256> = Hmac::new_varkey(b"first").unwrap();
+        let key: Hmac<Sha256> = Hmac::new_from_slice(b"first").unwrap();
 
         let no_claims = "header";
         match VerifyWithKey::<String>::verify_with_key(no_claims, &key) {
@@ -232,8 +232,8 @@ mod tests {
         T: FromIterator<(&'static str, Box<dyn VerifyingAlgorithm>)>,
     {
         // Test two different algorithms in the same store
-        let key1: Hmac<Sha256> = Hmac::new_varkey(b"first")?;
-        let key2: Hmac<Sha512> = Hmac::new_varkey(b"second")?;
+        let key1: Hmac<Sha256> = Hmac::new_from_slice(b"first")?;
+        let key2: Hmac<Sha512> = Hmac::new_from_slice(b"second")?;
 
         let name_to_key_tuples = vec![
             ("first_key", Box::new(key1) as Box<dyn VerifyingAlgorithm>),
