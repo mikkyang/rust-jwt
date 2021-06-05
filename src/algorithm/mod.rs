@@ -7,7 +7,7 @@
 //! use hmac::{Hmac, NewMac};
 //! use sha2::Sha256;
 //!
-//! let hs256_key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret").unwrap();
+//! let hs256_key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret").unwrap();
 //! ```
 
 use serde::{Deserialize, Serialize};

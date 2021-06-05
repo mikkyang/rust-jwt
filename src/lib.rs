@@ -15,7 +15,7 @@
 //!
 //! # use jwt::Error;
 //! # fn try_main() -> Result<(), Error> {
-//! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret")?;
+//! let key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret")?;
 //! let mut claims = BTreeMap::new();
 //! claims.insert("sub", "someone");
 //! let token_str = claims.sign_with_key(&key)?;
@@ -35,7 +35,7 @@
 //!
 //! # use jwt::Error;
 //! # fn try_main() -> Result<(), Error> {
-//! let key: Hmac<Sha256> = Hmac::new_varkey(b"some-secret")?;
+//! let key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
 //! let claims: BTreeMap<String, String> = token_str.verify_with_key(&key)?;
 //! assert_eq!(claims["sub"], "someone");
@@ -57,7 +57,7 @@
 //!
 //! # use jwt::Error;
 //! # fn try_main() -> Result<(), Error> {
-//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
+//! let key: Hmac<Sha384> = Hmac::new_from_slice(b"some-secret")?;
 //! let header = Header {
 //!     algorithm: AlgorithmType::Hs384,
 //!     ..Default::default()
@@ -80,7 +80,7 @@
 //!
 //! # use jwt::Error;
 //! # fn try_main() -> Result<(), Error> {
-//! let key: Hmac<Sha384> = Hmac::new_varkey(b"some-secret")?;
+//! let key: Hmac<Sha384> = Hmac::new_from_slice(b"some-secret")?;
 //! let token_str = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPUkHK6zm6Wz7zk1kmIxz990Te7nlDjQ3vzcye29szZ-Sj47rLNSTJNzpQd_";
 //! let token: Token<Header, BTreeMap<String, String>, _> = token_str.verify_with_key(&key)?;
 //! let header = token.header();
@@ -208,7 +208,7 @@ mod tests {
 
         assert_eq!(token.header.algorithm, Hs256);
 
-        let verifier: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
+        let verifier: Hmac<Sha256> = Hmac::new_from_slice(b"secret")?;
         assert!(token.verify_with_key(&verifier).is_ok());
 
         Ok(())
@@ -217,7 +217,7 @@ mod tests {
     #[test]
     pub fn roundtrip() -> Result<(), Error> {
         let token: Token<Header, Claims, _> = Default::default();
-        let key: Hmac<Sha256> = Hmac::new_varkey(b"secret")?;
+        let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret")?;
         let signed_token = token.sign_with_key(&key)?;
         let signed_token_str = signed_token.as_str();
 
