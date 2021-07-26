@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Generic [JWT claims](https://tools.ietf.org/html/rfc7519#page-8) with
 /// defined fields for registered and private claims.
-#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     #[serde(flatten)]
     pub registered: RegisteredClaims,
@@ -27,7 +27,7 @@ pub type SecondsSinceEpoch = u64;
 
 /// Registered claims according to the
 /// [JWT specification](https://tools.ietf.org/html/rfc7519#page-9).
-#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct RegisteredClaims {
     #[serde(rename = "iss", skip_serializing_if = "Option::is_none")]
     pub issuer: Option<String>,
