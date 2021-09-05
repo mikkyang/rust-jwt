@@ -1,7 +1,7 @@
-# JWT [![Build Status]][travis] [![Latest Version]][crates.io] [![Documentation]][docs.rs]
+# JWT [![Build Status]][Github Actions] [![Latest Version]][crates.io] [![Documentation]][docs.rs]
 
-[Build Status]: https://api.travis-ci.org/mikkyang/rust-jwt.svg?branch=master
-[travis]: https://travis-ci.org/mikkyang/rust-jwt
+[Build Status]: https://github.com/github/docs/actions/workflows/rust.yml/badge.svg?branch=master
+[Github Actions]: https://github.com/mikkyang/rust-jwt/actions/workflows/rust.yml?query=branch%3Amaster
 [Latest Version]: https://img.shields.io/crates/v/jwt.svg
 [crates.io]: https://crates.io/crates/jwt
 [Documentation]: https://img.shields.io/badge/rust-documentation-blue.svg
