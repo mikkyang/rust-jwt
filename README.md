@@ -9,12 +9,6 @@
 
 A JSON Web Token library.
 
-## Usage
-
-Note, for legacy support (not recommended, only supported up until 0.9.0), import from `jwt::legacy` instead
-of directly from `jwt`. Everything should work as before, with some small
-improvements.
-
 ### Only Claims
 
 If you don't care about that header as long as the header is verified, signing
