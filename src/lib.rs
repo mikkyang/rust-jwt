@@ -1,6 +1,3 @@
-//! Note, for legacy support (not recommended), import from
-//! [`jwt::legacy`](legacy/index.html) instead of directly from `jwt`.
-//! Everything should work as before, with some small improvements.
 //! ### Only Claims
 //! If you don't care about that header as long as the header is verified, signing
 //! and verification can be done with just a few traits.
