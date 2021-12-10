@@ -247,7 +247,7 @@ mod tests {
 
     // Header   {"alg":"HS512","kid":"second_key"}
     // Claims   {"name":"Jane Doe"}
-    const JANE_DOE_SECOND_KEY_TOKEN: &'static str = "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A";
+    const JANE_DOE_SECOND_KEY_TOKEN: &str = "eyJhbGciOiJIUzUxMiIsImtpZCI6InNlY29uZF9rZXkifQ.eyJuYW1lIjoiSmFuZSBEb2UifQ.t2ON5s8DDb2hefBIWAe0jaEcp-T7b2Wevmj0kKJ8BFxKNQURHpdh4IA-wbmBmqtiCnqTGoRdqK45hhW0AOtz0A";
 
     #[test]
     pub fn verify_claims_with_b_tree_map() -> Result<(), Error> {

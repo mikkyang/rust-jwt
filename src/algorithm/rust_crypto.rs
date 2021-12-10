@@ -54,7 +54,7 @@ where
     }
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error> {
-        let hmac = get_hmac_with_data(&self, header, claims);
+        let hmac = get_hmac_with_data(self, header, claims);
         let mac_result = hmac.finalize();
         let code = mac_result.into_bytes();
         Ok(base64::encode_config(&code, base64::URL_SAFE_NO_PAD))
@@ -79,7 +79,7 @@ where
 
     fn verify_bytes(&self, header: &str, claims: &str, signature: &[u8]) -> Result<bool, Error> {
         let hmac = get_hmac_with_data(self, header, claims);
-        hmac.verify_slice(&signature)?;
+        hmac.verify_slice(signature)?;
         Ok(true)
     }
 }
@@ -119,7 +119,7 @@ mod tests {
         let expected_signature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
 
         let signer: Hmac<Sha256> = Hmac::new_from_slice(b"secret")?;
-        let computed_signature = SigningAlgorithm::sign(&signer, &header, &claims)?;
+        let computed_signature = SigningAlgorithm::sign(&signer, header, claims)?;
 
         assert_eq!(computed_signature, expected_signature);
         Ok(())
@@ -133,7 +133,7 @@ mod tests {
 
         let verifier: Hmac<Sha256> = Hmac::new_from_slice(b"secret")?;
         assert!(VerifyingAlgorithm::verify(
-            &verifier, &header, &claims, &signature
+            &verifier, header, claims, signature
         )?);
         Ok(())
     }

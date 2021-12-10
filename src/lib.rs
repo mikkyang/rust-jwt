@@ -144,9 +144,9 @@ impl<H, C, S> Token<H, C, S> {
     }
 }
 
-impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
-    fn into(self) -> (H, C) {
-        (self.header, self.claims)
+impl<H, C, S> From<Token<H, C, S>> for (H, C) {
+    fn from(token: Token<H, C, S>) -> Self {
+        (token.header, token.claims)
     }
 }
 
