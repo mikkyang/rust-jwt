@@ -2,7 +2,8 @@ use std::fmt;
 use std::string::FromUtf8Error;
 
 use base64::DecodeError;
-use crypto_mac::{InvalidKeyLength, MacError};
+use crypto_common::InvalidLength;
+use digest::MacError;
 use serde_json::Error as JsonError;
 
 use self::Error::*;
@@ -21,7 +22,7 @@ pub enum Error {
     NoKeyWithKeyId(String),
     NoSignatureComponent,
     RustCryptoMac(MacError),
-    RustCryptoMacKeyLength(InvalidKeyLength),
+    RustCryptoMacKeyLength(InvalidLength),
     TooManyComponents,
     Utf8(FromUtf8Error),
     #[cfg(feature = "openssl")]
@@ -69,6 +70,6 @@ error_wrap!(DecodeError, Base64);
 error_wrap!(JsonError, Json);
 error_wrap!(FromUtf8Error, Utf8);
 error_wrap!(MacError, RustCryptoMac);
-error_wrap!(InvalidKeyLength, RustCryptoMacKeyLength);
+error_wrap!(InvalidLength, RustCryptoMacKeyLength);
 #[cfg(feature = "openssl")]
 error_wrap!(openssl::error::ErrorStack, Error::OpenSsl);

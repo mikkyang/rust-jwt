@@ -149,7 +149,7 @@ mod tests {
     use std::collections::{BTreeMap, HashMap};
     use std::iter::FromIterator;
 
-    use hmac::{Hmac, NewMac};
+    use hmac::{Hmac, Mac};
     use serde::Deserialize;
     use sha2::{Sha256, Sha512};
 

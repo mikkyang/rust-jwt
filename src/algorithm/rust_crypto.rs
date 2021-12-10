@@ -2,9 +2,14 @@
 //! According to that organization, only hmac is safely implemented at the
 //! moment.
 
-use crypto_mac::Mac;
-use digest::generic_array::ArrayLength;
-use digest::{BlockInput, FixedOutput, Reset, Update};
+use digest::core_api::{CoreProxy, FixedOutputCore};
+use digest::{
+    block_buffer::Eager,
+    consts::U256,
+    core_api::{BlockSizeUser, BufferKindUser},
+    generic_array::typenum::{IsLess, Le, NonZero},
+    HashMarker, Mac,
+};
 use hmac::Hmac;
 
 use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
@@ -34,9 +39,15 @@ type_level_algorithm_type!(sha2::Sha512, AlgorithmType::Hs512);
 
 impl<D> SigningAlgorithm for Hmac<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
-    D::BlockSize: ArrayLength<u8>,
-    D::OutputSize: ArrayLength<u8>,
+    D: CoreProxy + TypeLevelAlgorithmType,
+    D::Core: HashMarker
+        + BufferKindUser<BufferKind = Eager>
+        + FixedOutputCore
+        + digest::Reset
+        + Default
+        + Clone,
+    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
+    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
     fn algorithm_type(&self) -> AlgorithmType {
         D::algorithm_type()
@@ -52,9 +63,15 @@ where
 
 impl<D> VerifyingAlgorithm for Hmac<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
-    D::BlockSize: ArrayLength<u8>,
-    D::OutputSize: ArrayLength<u8>,
+    D: CoreProxy + TypeLevelAlgorithmType,
+    D::Core: HashMarker
+        + BufferKindUser<BufferKind = Eager>
+        + FixedOutputCore
+        + digest::Reset
+        + Default
+        + Clone,
+    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
+    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
     fn algorithm_type(&self) -> AlgorithmType {
         D::algorithm_type()
@@ -62,16 +79,22 @@ where
 
     fn verify_bytes(&self, header: &str, claims: &str, signature: &[u8]) -> Result<bool, Error> {
         let hmac = get_hmac_with_data(self, header, claims);
-        hmac.verify(&signature)?;
+        hmac.verify_slice(&signature)?;
         Ok(true)
     }
 }
 
 fn get_hmac_with_data<D>(hmac: &Hmac<D>, header: &str, claims: &str) -> Hmac<D>
 where
-    D: Update + BlockInput + FixedOutput + Reset + Default + Clone + TypeLevelAlgorithmType,
-    D::BlockSize: ArrayLength<u8>,
-    D::OutputSize: ArrayLength<u8>,
+    D: CoreProxy,
+    D::Core: HashMarker
+        + BufferKindUser<BufferKind = Eager>
+        + FixedOutputCore
+        + digest::Reset
+        + Default
+        + Clone,
+    <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
+    Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
     let mut hmac = hmac.clone();
     hmac.reset();
@@ -85,7 +108,7 @@ where
 mod tests {
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
     use crate::error::Error;
-    use crypto_mac::NewMac;
+    use digest::Mac;
     use hmac::Hmac;
     use sha2::Sha256;
 

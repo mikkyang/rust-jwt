@@ -1,4 +1,4 @@
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::{RegisteredClaims, SignWithKey, VerifyWithKey};
 use sha2::Sha256;
 

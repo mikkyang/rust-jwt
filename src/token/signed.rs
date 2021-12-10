@@ -141,7 +141,7 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 mod tests {
     use std::collections::BTreeMap;
 
-    use hmac::{Hmac, NewMac};
+    use hmac::{Hmac, Mac};
     use serde::Serialize;
     use sha2::{Sha256, Sha512};
 

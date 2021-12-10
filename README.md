@@ -20,7 +20,7 @@ Claims can be any `serde::Serialize` type, usually derived with
 `serde_derive`.
 
 ```rust
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -40,7 +40,7 @@ Claims can be any `serde::Deserialize` type, usually derived with
 `serde_derive`.
 
 ```rust
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -64,7 +64,7 @@ fields, but any type that implements `JoseHeader` can be used.
 Both header and claims have to implement `serde::Serialize`.
 
 ```rust
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::{AlgorithmType, Header, SignWithKey, Token};
 use sha2::Sha384;
 use std::collections::BTreeMap;
@@ -87,7 +87,7 @@ assert_eq!(token.as_str(), "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzb21lb25lIn0.WM_WnPU
 Both header and claims have to implement `serde::Deserialize`.
 
 ```rust
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
 use sha2::Sha384;
 use std::collections::BTreeMap;
@@ -114,7 +114,7 @@ For the trait `VerifyWithStore`, the key id from the deserialized header will be
 to use.
 
 ```rust
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::{Header, SignWithStore, Token, VerifyWithStore};
 use sha2::Sha512;
 use std::collections::BTreeMap;
