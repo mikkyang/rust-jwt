@@ -5,7 +5,7 @@
 //! Claims can be any `serde::Serialize` type, usually derived with
 //! `serde_derive`.
 //! ```rust
-//! use hmac::{Hmac, NewMac};
+//! use hmac::{Hmac, Mac};
 //! use jwt::SignWithKey;
 //! use sha2::Sha256;
 //! use std::collections::BTreeMap;
@@ -25,7 +25,7 @@
 //! Claims can be any `serde::Deserialize` type, usually derived with
 //! `serde_derive`.
 //! ```rust
-//! use hmac::{Hmac, NewMac};
+//! use hmac::{Hmac, Mac};
 //! use jwt::VerifyWithKey;
 //! use sha2::Sha256;
 //! use std::collections::BTreeMap;
@@ -47,7 +47,7 @@
 //! #### Signing
 //! Both header and claims have to implement `serde::Serialize`.
 //! ```rust
-//! use hmac::{Hmac, NewMac};
+//! use hmac::{Hmac, Mac};
 //! use jwt::{AlgorithmType, Header, SignWithKey, Token};
 //! use sha2::Sha384;
 //! use std::collections::BTreeMap;
@@ -70,7 +70,7 @@
 //! #### Verification
 //! Both header and claims have to implement `serde::Deserialize`.
 //! ```rust
-//! use hmac::{Hmac, NewMac};
+//! use hmac::{Hmac, Mac};
 //! use jwt::{AlgorithmType, Header, Token, VerifyWithKey};
 //! use sha2::Sha384;
 //! use std::collections::BTreeMap;
@@ -144,9 +144,9 @@ impl<H, C, S> Token<H, C, S> {
     }
 }
 
-impl<H, C, S> Into<(H, C)> for Token<H, C, S> {
-    fn into(self) -> (H, C) {
-        (self.header, self.claims)
+impl<H, C, S> From<Token<H, C, S>> for (H, C) {
+    fn from(token: Token<H, C, S>) -> Self {
+        (token.header, token.claims)
     }
 }
 
@@ -195,7 +195,7 @@ mod tests {
     use crate::Claims;
     use crate::Token;
     use hmac::Hmac;
-    use hmac::NewMac;
+    use hmac::Mac;
     use sha2::Sha256;
 
     #[test]

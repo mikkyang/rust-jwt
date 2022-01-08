@@ -1,4 +1,4 @@
-use hmac::{Hmac, NewMac};
+use hmac::{Hmac, Mac};
 use jwt::{Header, SignWithKey, Token, VerifyWithKey};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;

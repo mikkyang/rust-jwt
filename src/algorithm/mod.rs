@@ -4,7 +4,7 @@
 //! module. The `none` algorithm is explicitly not supported.
 //! ## Examples
 //! ```
-//! use hmac::{Hmac, NewMac};
+//! use hmac::{Hmac, Mac};
 //! use sha2::Sha256;
 //!
 //! let hs256_key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret").unwrap();

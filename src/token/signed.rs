@@ -131,9 +131,9 @@ impl<'a, H, C> Token<H, C, Signed> {
     }
 }
 
-impl<H, C> Into<String> for Token<H, C, Signed> {
-    fn into(self) -> String {
-        self.signature.token_string
+impl<H, C> From<Token<H, C, Signed>> for String {
+    fn from(token: Token<H, C, Signed>) -> Self {
+        token.signature.token_string
     }
 }
 
@@ -141,7 +141,7 @@ impl<H, C> Into<String> for Token<H, C, Signed> {
 mod tests {
     use std::collections::BTreeMap;
 
-    use hmac::{Hmac, NewMac};
+    use hmac::{Hmac, Mac};
     use serde::Serialize;
     use sha2::{Sha256, Sha512};
 
