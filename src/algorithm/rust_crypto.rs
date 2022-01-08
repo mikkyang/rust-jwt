@@ -2,15 +2,14 @@
 //! According to that organization, only hmac is safely implemented at the
 //! moment.
 
-use digest::core_api::{CoreProxy, FixedOutputCore};
 use digest::{
     block_buffer::Eager,
     consts::U256,
-    core_api::{BlockSizeUser, BufferKindUser},
+    core_api::{BlockSizeUser, BufferKindUser, CoreProxy, FixedOutputCore},
     generic_array::typenum::{IsLess, Le, NonZero},
-    HashMarker, Mac,
+    HashMarker,
 };
-use hmac::Hmac;
+use hmac::{Hmac, Mac};
 
 use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
@@ -108,8 +107,7 @@ where
 mod tests {
     use crate::algorithm::{SigningAlgorithm, VerifyingAlgorithm};
     use crate::error::Error;
-    use digest::Mac;
-    use hmac::Hmac;
+    use hmac::{Hmac, Mac};
     use sha2::Sha256;
 
     #[test]
