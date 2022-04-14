@@ -1,8 +1,10 @@
 //! Convenience structs for commonly defined fields in headers.
 
 use std::borrow::Cow;
+use std::fmt::Formatter;
 
-use serde::{Deserialize, Serialize};
+use serde::de::Visitor;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::algorithm::AlgorithmType;
 use crate::error::Error;
@@ -57,7 +59,7 @@ impl JoseHeader for Header {
     }
 
     fn content_type(&self) -> Option<HeaderContentType> {
-        self.content_type
+        self.content_type.clone()
     }
 }
 
@@ -68,10 +70,50 @@ pub enum HeaderType {
     JsonWebToken,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum HeaderContentType {
-    #[serde(rename = "JWT")]
     JsonWebToken,
+    Custom(String),
+}
+
+impl Serialize for HeaderContentType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            HeaderContentType::JsonWebToken => serializer.serialize_str("JWT"),
+            HeaderContentType::Custom(ref ctype) => serializer.serialize_str(ctype),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for HeaderContentType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct CTypeVisitor;
+        impl<'de> Visitor<'de> for CTypeVisitor {
+            type Value = HeaderContentType;
+
+            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+                formatter.write_str(r#"`"JWT"` or another string for a custom content type"#)
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(match v {
+                    "JWT" => HeaderContentType::JsonWebToken,
+                    content_type => HeaderContentType::Custom(content_type.to_string()),
+                })
+            }
+        }
+
+        deserializer.deserialize_str(CTypeVisitor)
+    }
 }
 
 /// A header that only contains the algorithm type. The `ToBase64`
@@ -132,7 +174,7 @@ impl<'a> JoseHeader for BorrowedKeyHeader<'a> {
 mod tests {
     use crate::algorithm::AlgorithmType;
     use crate::error::Error;
-    use crate::header::{Header, HeaderType, PrecomputedAlgorithmOnlyHeader};
+    use crate::header::{Header, HeaderContentType, HeaderType, PrecomputedAlgorithmOnlyHeader};
     use crate::{FromBase64, ToBase64};
 
     #[test]
@@ -186,6 +228,50 @@ mod tests {
             assert_eq!(*algorithm, header.algorithm);
         }
 
+        Ok(())
+    }
+
+    #[test]
+    fn supports_custom_content_type_header() -> Result<(), Error> {
+        let header = Header {
+            content_type: Some(HeaderContentType::Custom("some-test".to_string())),
+            ..Default::default()
+        };
+
+        let enc = header.to_base64()?;
+        assert_eq!(header, Header::from_base64(&*enc)?);
+        Ok(())
+    }
+
+    #[test]
+    fn encodes_custom_header_content_types_correctly() -> Result<(), Error> {
+        let header = Header {
+            content_type: Some(HeaderContentType::Custom("some-test".to_string())),
+            algorithm: AlgorithmType::Hs256,
+            type_: None,
+            key_id: None,
+        };
+
+        assert_eq!(
+            r#"{"alg":"HS256","cty":"some-test"}"#,
+            serde_json::to_string(&header)?
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn encodes_standard_header_content_type_correctly() -> Result<(), Error> {
+        let header = Header {
+            content_type: Some(HeaderContentType::JsonWebToken),
+            algorithm: AlgorithmType::Hs256,
+            type_: None,
+            key_id: None,
+        };
+
+        assert_eq!(
+            r#"{"alg":"HS256","cty":"JWT"}"#,
+            serde_json::to_string(&header)?
+        );
         Ok(())
     }
 }
