@@ -17,7 +17,7 @@ pub trait JoseHeader {
         None
     }
 
-    fn type_(&self) -> Option<HeaderType> {
+    fn type_(&self) -> Option<&str> {
         None
     }
 
@@ -37,7 +37,7 @@ pub struct Header {
     pub key_id: Option<String>,
 
     #[serde(rename = "typ", skip_serializing_if = "Option::is_none")]
-    pub type_: Option<HeaderType>,
+    pub type_: Option<String>,
 
     #[serde(rename = "cty", skip_serializing_if = "Option::is_none")]
     pub content_type: Option<HeaderContentType>,
@@ -52,20 +52,13 @@ impl JoseHeader for Header {
         self.key_id.as_deref()
     }
 
-    fn type_(&self) -> Option<HeaderType> {
-        self.type_
+    fn type_(&self) -> Option<&str> {
+        self.type_.as_deref()
     }
 
     fn content_type(&self) -> Option<HeaderContentType> {
         self.content_type
     }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum HeaderType {
-    #[serde(rename = "JWT")]
-    JsonWebToken,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -132,7 +125,7 @@ impl<'a> JoseHeader for BorrowedKeyHeader<'a> {
 mod tests {
     use crate::algorithm::AlgorithmType;
     use crate::error::Error;
-    use crate::header::{Header, HeaderType, PrecomputedAlgorithmOnlyHeader};
+    use crate::header::{Header, PrecomputedAlgorithmOnlyHeader};
     use crate::{FromBase64, ToBase64};
 
     #[test]
@@ -140,7 +133,7 @@ mod tests {
         let enc = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
         let header = Header::from_base64(enc)?;
 
-        assert_eq!(header.type_.unwrap(), HeaderType::JsonWebToken);
+        assert_eq!(header.type_.unwrap(), "JWT".to_string());
         assert_eq!(header.algorithm, AlgorithmType::Hs256);
 
         let enc = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFLU0YzZyJ9";
@@ -185,6 +178,17 @@ mod tests {
             let header = Header::from_base64(&*precomputed_str)?;
             assert_eq!(*algorithm, header.algorithm);
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn typ_field_can_contain_any_value() -> Result<(), Error> {
+        // A `typ` value other than "JWT"
+        let enc = "eyJhbGciOiJSUzI1NiIsImtpZCI6IkVDN0RFNzc5OTI5RjUwNzQ4RDYwNDgwN0UwODgzMDA0IiwidHlwIjoiYXQrand0In0";
+        let header = Header::from_base64(enc)?;
+
+        assert_eq!(header.type_.unwrap(), "at+jwt".to_string());
 
         Ok(())
     }
