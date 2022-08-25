@@ -27,6 +27,7 @@ use openssl::sign::{Signer, Verifier};
 /// A wrapper class around [PKey](../../../openssl/pkey/struct.PKey.html) that
 /// associates the key with a
 /// [MessageDigest](../../../openssl/hash/struct.MessageDigest.html).
+#[derive(Clone)]
 pub struct PKeyWithDigest<T> {
     pub digest: MessageDigest,
     pub key: PKey<T>,
