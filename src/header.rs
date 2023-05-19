@@ -36,6 +36,9 @@ pub struct Header {
     #[serde(rename = "kid", skip_serializing_if = "Option::is_none")]
     pub key_id: Option<String>,
 
+    #[serde(rename = "x5t", skip_serializing_if = "Option::is_none")]
+    pub x5t: Option<String>,
+
     #[serde(rename = "typ", skip_serializing_if = "Option::is_none")]
     pub type_: Option<HeaderType>,
 
