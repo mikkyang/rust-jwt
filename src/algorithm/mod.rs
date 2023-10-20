@@ -16,6 +16,8 @@ use crate::error::Error;
 
 #[cfg(feature = "openssl")]
 pub mod openssl;
+#[cfg(feature = "ed25519-dalek")]
+pub mod ed25519_dalek;
 pub mod rust_crypto;
 pub mod store;
 
@@ -36,6 +38,7 @@ pub enum AlgorithmType {
     Ps256,
     Ps384,
     Ps512,
+    EdDSA,
     #[serde(rename = "none")]
     None,
 }
@@ -85,4 +88,13 @@ impl<T: AsRef<dyn SigningAlgorithm>> SigningAlgorithm for T {
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error> {
         self.as_ref().sign(header, claims)
     }
+}
+
+
+fn make_body(header: &str, claims: &str) -> Vec<u8> {
+    let mut body = vec![];
+    body.extend(header.as_bytes());
+    body.extend(crate::SEPARATOR.as_bytes());
+    body.extend(claims.as_bytes());
+    body
 }
