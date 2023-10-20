@@ -41,6 +41,8 @@ impl<T> PKeyWithDigest<T> {
             (Id::EC, Nid::SHA256) => AlgorithmType::Es256,
             (Id::EC, Nid::SHA384) => AlgorithmType::Es384,
             (Id::EC, Nid::SHA512) => AlgorithmType::Es512,
+            (Id::ED25519, Nid::UNDEF) => AlgorithmType::EdDSA,
+            (Id::ED448, Nid::UNDEF) => AlgorithmType::EdDSA,
             _ => panic!("Invalid algorithm type"),
         }
     }
@@ -52,12 +54,28 @@ impl SigningAlgorithm for PKeyWithDigest<Private> {
     }
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error> {
-        let mut signer = Signer::new(self.digest.clone(), &self.key)?;
-        signer.update(header.as_bytes())?;
-        signer.update(SEPARATOR.as_bytes())?;
-        signer.update(claims.as_bytes())?;
-        let signer_signature = signer.sign_to_vec()?;
+        let signer_signature = match self.algorithm_type() {
+            // for EdDSA, openssl needs to be told that no digest type is in use, as passing NULL
+            // is not enough.
+            AlgorithmType::EdDSA => {
+                let mut signer = Signer::new_without_digest(&self.key)?;
+                let mut body = vec![];
+                body.extend(header.as_bytes());
+                body.extend(SEPARATOR.as_bytes());
+                body.extend(claims.as_bytes());
 
+                signer.sign_oneshot_to_vec(body.as_slice())?
+            },
+            _ => {
+                let mut signer = Signer::new(self.digest.clone(), &self.key)?;
+                signer.update(header.as_bytes())?;
+                signer.update(SEPARATOR.as_bytes())?;
+                signer.update(claims.as_bytes())?;
+                signer.sign_to_vec()?
+            }
+        };
+
+        // note that Ed25519 signatures do not need to be converted to/from a DER format
         let signature = if self.key.id() == Id::EC {
             der_to_jose(&signer_signature)?
         } else {
@@ -74,19 +92,37 @@ impl VerifyingAlgorithm for PKeyWithDigest<Public> {
     }
 
     fn verify_bytes(&self, header: &str, claims: &str, signature: &[u8]) -> Result<bool, Error> {
-        let mut verifier = Verifier::new(self.digest.clone(), &self.key)?;
-        verifier.update(header.as_bytes())?;
-        verifier.update(SEPARATOR.as_bytes())?;
-        verifier.update(claims.as_bytes())?;
+        match self.algorithm_type() {
+            // for EdDSA, openssl needs to be told that no digest type is in use, as passing NULL
+            // is not enough.
+            AlgorithmType::EdDSA => {
+                let mut verifier = Verifier::new_without_digest(&self.key)?;
+                let mut body = vec![];
+                body.extend(header.as_bytes());
+                body.extend(SEPARATOR.as_bytes());
+                body.extend(claims.as_bytes());
 
-        let verified = if self.key.id() == Id::EC {
-            let der = jose_to_der(signature)?;
-            verifier.verify(&der)?
-        } else {
-            verifier.verify(signature)?
-        };
+                // note that Ed25519 signatures do not need to be converted to/from a DER format
+                let verified = verifier.verify_oneshot(signature, body.as_slice())?;
 
-        Ok(verified)
+                Ok(verified)
+            },
+            _ => {
+                let mut verifier = Verifier::new(self.digest.clone(), &self.key)?;
+                verifier.update(header.as_bytes())?;
+                verifier.update(SEPARATOR.as_bytes())?;
+                verifier.update(claims.as_bytes())?;
+
+                let verified = if self.key.id() == Id::EC {
+                    let der = jose_to_der(signature)?;
+                    verifier.verify(&der)?
+                } else {
+                    verifier.verify(signature)?
+                };
+
+                Ok(verified)
+            }
+        }
     }
 }
 
@@ -173,6 +209,30 @@ mod tests {
 
         let verification_result =
             public_key.verify(&AlgOnly(Es256).to_base64()?, CLAIMS, &*signature)?;
+        assert!(verification_result);
+        Ok(())
+    }
+
+    #[test]
+    fn eddsa() -> Result<(), Error> {
+        let private_pem = include_bytes!("../../test/eddsa-private.pem");
+
+        let private_key = PKeyWithDigest {
+            digest: MessageDigest::null(),
+            key: PKey::private_key_from_pem(private_pem)?,
+        };
+
+        let signature = private_key.sign(&AlgOnly(EdDSA).to_base64()?, CLAIMS)?;
+
+        let public_pem = include_bytes!("../../test/eddsa-public.pem");
+
+        let public_key = PKeyWithDigest {
+            digest: MessageDigest::null(),
+            key: PKey::public_key_from_pem(public_pem)?,
+        };
+
+        let verification_result =
+            public_key.verify(&AlgOnly(EdDSA).to_base64()?, CLAIMS, &*signature)?;
         assert!(verification_result);
         Ok(())
     }

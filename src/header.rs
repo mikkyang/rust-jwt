@@ -100,6 +100,7 @@ impl ToBase64 for PrecomputedAlgorithmOnlyHeader {
             AlgorithmType::Ps256 => "eyJhbGciOiAiUFMyNTYifQ",
             AlgorithmType::Ps384 => "eyJhbGciOiAiUFMzODQifQ",
             AlgorithmType::Ps512 => "eyJhbGciOiAiUFM1MTIifQ",
+            AlgorithmType::EdDSA => "eyJhbGciOiAiRWREU0EifQ",
             AlgorithmType::None => "eyJhbGciOiAibm9uZSJ9Cg",
         };
 

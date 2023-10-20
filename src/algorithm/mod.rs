@@ -36,6 +36,7 @@ pub enum AlgorithmType {
     Ps256,
     Ps384,
     Ps512,
+    EdDSA,
     #[serde(rename = "none")]
     None,
 }
