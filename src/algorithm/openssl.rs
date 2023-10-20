@@ -59,12 +59,8 @@ impl SigningAlgorithm for PKeyWithDigest<Private> {
             // is not enough.
             AlgorithmType::EdDSA => {
                 let mut signer = Signer::new_without_digest(&self.key)?;
-                let mut body = vec![];
-                body.extend(header.as_bytes());
-                body.extend(SEPARATOR.as_bytes());
-                body.extend(claims.as_bytes());
 
-                signer.sign_oneshot_to_vec(body.as_slice())?
+                signer.sign_oneshot_to_vec(super::make_body(header, claims).as_slice())?
             },
             _ => {
                 let mut signer = Signer::new(self.digest.clone(), &self.key)?;
@@ -97,13 +93,9 @@ impl VerifyingAlgorithm for PKeyWithDigest<Public> {
             // is not enough.
             AlgorithmType::EdDSA => {
                 let mut verifier = Verifier::new_without_digest(&self.key)?;
-                let mut body = vec![];
-                body.extend(header.as_bytes());
-                body.extend(SEPARATOR.as_bytes());
-                body.extend(claims.as_bytes());
 
                 // note that Ed25519 signatures do not need to be converted to/from a DER format
-                let verified = verifier.verify_oneshot(signature, body.as_slice())?;
+                let verified = verifier.verify_oneshot(signature, super::make_body(header, claims).as_slice())?;
 
                 Ok(verified)
             },
