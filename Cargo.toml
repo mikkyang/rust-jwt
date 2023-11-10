@@ -9,13 +9,15 @@ repository = "http://github.com/mikkyang/rust-jwt"
 readme = "README.md"
 keywords = ["JWT", "token", "web"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
-[package.metadata.docs.rs]
-features = ["openssl"]
+[features]
+openssl = ["dep:openssl"]
+openssl-vendored = ["openssl", "openssl/vendored"]
+default = []
 
 [dependencies]
-base64 = "0.13"
+base64 = "0.21"
 crypto-common = "0.1"
 digest = "0.10"
 hmac = { version = "0.12", features = ["reset"] }

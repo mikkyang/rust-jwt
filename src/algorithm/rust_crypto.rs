@@ -2,6 +2,7 @@
 //! According to that organization, only hmac is safely implemented at the
 //! moment.
 
+use base64::Engine;
 use digest::{
     block_buffer::Eager,
     consts::U256,
@@ -56,7 +57,7 @@ where
         let hmac = get_hmac_with_data(self, header, claims);
         let mac_result = hmac.finalize();
         let code = mac_result.into_bytes();
-        Ok(base64::encode_config(&code, base64::URL_SAFE_NO_PAD))
+        Ok(base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(code))
     }
 }
 

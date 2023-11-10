@@ -43,7 +43,7 @@ fn login(token: &str) -> Result<String, &'static str> {
 fn main() -> Result<(), &'static str> {
     let token = new_token("Michael Yang", "password")?;
 
-    let logged_in_user = login(&*token)?;
+    let logged_in_user = login(&token)?;
 
     assert_eq!(logged_in_user, "Michael Yang");
     Ok(())

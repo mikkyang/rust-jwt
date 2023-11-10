@@ -124,7 +124,7 @@ where
     }
 }
 
-impl<'a, H, C> Token<H, C, Signed> {
+impl<H, C> Token<H, C, Signed> {
     /// Get the string representation of the token.
     pub fn as_str(&self) -> &str {
         &self.signature.token_string
