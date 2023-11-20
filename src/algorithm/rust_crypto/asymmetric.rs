@@ -16,12 +16,12 @@ use rsa::pkcs1::DecodeRsaPrivateKey;
 use signature::{DigestSigner, DigestVerifier, SignatureEncoding};
 
 #[derive(Clone, Debug)]
-pub enum PublicKey<D: SupportedPKeyDigest> {
+pub enum PublicKey<D: SupportedAsymmetricDigest> {
     RSA(rsa::pkcs1v15::VerifyingKey<D>),
     EC(p256::ecdsa::VerifyingKey),
 }
 
-impl<D: SupportedPKeyDigest> PublicKey<D> {
+impl<D: SupportedAsymmetricDigest> PublicKey<D> {
     pub fn from_pem_bytes(encoded: &[u8]) -> Result<Self, Error> {
         Self::from_pem(std::str::from_utf8(encoded).map_err(|_| Error::InvalidKey)?)
     }
@@ -37,7 +37,7 @@ impl<D: SupportedPKeyDigest> PublicKey<D> {
     }
 }
 
-impl<D: SupportedPKeyDigest> DigestVerifier<D, rsa::pkcs1v15::Signature> for PublicKey<D> {
+impl<D: SupportedAsymmetricDigest> DigestVerifier<D, rsa::pkcs1v15::Signature> for PublicKey<D> {
     fn verify_digest(
         &self,
         digest: D,
@@ -50,7 +50,7 @@ impl<D: SupportedPKeyDigest> DigestVerifier<D, rsa::pkcs1v15::Signature> for Pub
     }
 }
 
-impl<D: SupportedPKeyDigest> DigestVerifier<D, p256::ecdsa::Signature> for PublicKey<D>
+impl<D: SupportedAsymmetricDigest> DigestVerifier<D, p256::ecdsa::Signature> for PublicKey<D>
 where
     D: FixedOutput<OutputSize = FieldBytesSize<NistP256>>,
 {
@@ -67,12 +67,12 @@ where
 }
 
 #[derive(Clone, Debug)]
-pub enum PrivateKey<D: SupportedPKeyDigest> {
+pub enum PrivateKey<D: SupportedAsymmetricDigest> {
     RSA(Box<rsa::pkcs1v15::SigningKey<D>>),
     EC(p256::ecdsa::SigningKey),
 }
 
-impl<D: SupportedPKeyDigest> PrivateKey<D> {
+impl<D: SupportedAsymmetricDigest> PrivateKey<D> {
     pub fn from_pem_bytes(encoded: &[u8]) -> Result<Self, Error> {
         Self::from_pem(std::str::from_utf8(encoded).map_err(|_| Error::InvalidKey)?)
     }
@@ -81,16 +81,20 @@ impl<D: SupportedPKeyDigest> PrivateKey<D> {
         if let Ok(ec) = pem.parse::<p256::SecretKey>() {
             Ok(PrivateKey::EC(ecdsa::SigningKey::from(ec)))
         } else if let Ok(rsa) = rsa::RsaPrivateKey::from_pkcs8_pem(pem) {
-            Ok(PrivateKey::RSA(Box::new(rsa::pkcs1v15::SigningKey::new(rsa))))
+            Ok(PrivateKey::RSA(Box::new(rsa::pkcs1v15::SigningKey::new(
+                rsa,
+            ))))
         } else if let Ok(rsa) = rsa::RsaPrivateKey::from_pkcs1_pem(pem) {
-            Ok(PrivateKey::RSA(Box::new(rsa::pkcs1v15::SigningKey::new(rsa))))
+            Ok(PrivateKey::RSA(Box::new(rsa::pkcs1v15::SigningKey::new(
+                rsa,
+            ))))
         } else {
             Err(Error::InvalidKey)
         }
     }
 }
 
-impl<D: SupportedPKeyDigest> DigestSigner<D, rsa::pkcs1v15::Signature> for PrivateKey<D> {
+impl<D: SupportedAsymmetricDigest> DigestSigner<D, rsa::pkcs1v15::Signature> for PrivateKey<D> {
     fn try_sign_digest(&self, digest: D) -> Result<rsa::pkcs1v15::Signature, signature::Error> {
         match self {
             PrivateKey::RSA(key) => key.try_sign_digest(digest),
@@ -99,7 +103,7 @@ impl<D: SupportedPKeyDigest> DigestSigner<D, rsa::pkcs1v15::Signature> for Priva
     }
 }
 
-impl<D: SupportedPKeyDigest> DigestSigner<D, p256::ecdsa::Signature> for PrivateKey<D>
+impl<D: SupportedAsymmetricDigest> DigestSigner<D, p256::ecdsa::Signature> for PrivateKey<D>
 where
     D: FixedOutput<OutputSize = FieldBytesSize<NistP256>>,
 {
@@ -111,12 +115,18 @@ where
     }
 }
 
-pub struct PKeyWithDigest<D: SupportedPKeyDigest, S: SignatureEncoding, K: SupportedPKey> {
+pub struct AsymmetricKeyWithDigest<
+    D: SupportedAsymmetricDigest,
+    S: SignatureEncoding,
+    K: SupportedAsymmetricKey,
+> {
     key: K,
     _marker: std::marker::PhantomData<(S, D)>,
 }
 
-impl<D: SupportedPKeyDigest, S: SignatureEncoding, K: SupportedPKey> PKeyWithDigest<D, S, K> {
+impl<D: SupportedAsymmetricDigest, S: SignatureEncoding, K: SupportedAsymmetricKey>
+    AsymmetricKeyWithDigest<D, S, K>
+{
     pub fn new(key: K) -> Self {
         Self {
             key,
@@ -132,23 +142,23 @@ pub enum DigestType {
     SHA512,
 }
 
-pub trait SupportedPKeyDigest: Digest + digest::const_oid::AssociatedOid {
+pub trait SupportedAsymmetricDigest: Digest + digest::const_oid::AssociatedOid {
     fn digest_type() -> DigestType;
 }
 
-impl SupportedPKeyDigest for sha2::Sha256 {
+impl SupportedAsymmetricDigest for sha2::Sha256 {
     fn digest_type() -> DigestType {
         DigestType::SHA256
     }
 }
 
-impl SupportedPKeyDigest for sha2::Sha384 {
+impl SupportedAsymmetricDigest for sha2::Sha384 {
     fn digest_type() -> DigestType {
         DigestType::SHA384
     }
 }
 
-impl SupportedPKeyDigest for sha2::Sha512 {
+impl SupportedAsymmetricDigest for sha2::Sha512 {
     fn digest_type() -> DigestType {
         DigestType::SHA512
     }
@@ -160,11 +170,11 @@ pub enum PKeyType {
     RSA,
 }
 
-pub trait SupportedPKey {
+pub trait SupportedAsymmetricKey {
     fn key_type(&self) -> PKeyType;
 }
 
-impl<C> SupportedPKey for ecdsa::SigningKey<C>
+impl<C> SupportedAsymmetricKey for ecdsa::SigningKey<C>
 where
     C: PrimeCurve + CurveArithmetic,
     Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
@@ -175,7 +185,7 @@ where
     }
 }
 
-impl<C> SupportedPKey for ecdsa::VerifyingKey<C>
+impl<C> SupportedAsymmetricKey for ecdsa::VerifyingKey<C>
 where
     C: PrimeCurve + CurveArithmetic,
 {
@@ -184,19 +194,19 @@ where
     }
 }
 
-impl<D: SupportedPKeyDigest> SupportedPKey for rsa::pkcs1v15::SigningKey<D> {
+impl<D: SupportedAsymmetricDigest> SupportedAsymmetricKey for rsa::pkcs1v15::SigningKey<D> {
     fn key_type(&self) -> PKeyType {
         PKeyType::RSA
     }
 }
 
-impl<D: SupportedPKeyDigest> SupportedPKey for rsa::pkcs1v15::VerifyingKey<D> {
+impl<D: SupportedAsymmetricDigest> SupportedAsymmetricKey for rsa::pkcs1v15::VerifyingKey<D> {
     fn key_type(&self) -> PKeyType {
         PKeyType::RSA
     }
 }
 
-impl<D: SupportedPKeyDigest> SupportedPKey for PublicKey<D> {
+impl<D: SupportedAsymmetricDigest> SupportedAsymmetricKey for PublicKey<D> {
     fn key_type(&self) -> PKeyType {
         match self {
             PublicKey::RSA(_) => PKeyType::RSA,
@@ -205,7 +215,7 @@ impl<D: SupportedPKeyDigest> SupportedPKey for PublicKey<D> {
     }
 }
 
-impl<D: SupportedPKeyDigest> SupportedPKey for PrivateKey<D> {
+impl<D: SupportedAsymmetricDigest> SupportedAsymmetricKey for PrivateKey<D> {
     fn key_type(&self) -> PKeyType {
         match self {
             PrivateKey::RSA(_) => PKeyType::RSA,
@@ -214,7 +224,9 @@ impl<D: SupportedPKeyDigest> SupportedPKey for PrivateKey<D> {
     }
 }
 
-impl<D: SupportedPKeyDigest, S: SignatureEncoding, K: SupportedPKey> PKeyWithDigest<D, S, K> {
+impl<D: SupportedAsymmetricDigest, S: SignatureEncoding, K: SupportedAsymmetricKey>
+    AsymmetricKeyWithDigest<D, S, K>
+{
     fn algorithm_type(&self) -> AlgorithmType {
         match (self.key.key_type(), D::digest_type()) {
             (PKeyType::RSA, DigestType::SHA256) => AlgorithmType::Rs256,
@@ -227,11 +239,14 @@ impl<D: SupportedPKeyDigest, S: SignatureEncoding, K: SupportedPKey> PKeyWithDig
     }
 }
 
-impl<D: SupportedPKeyDigest, S: SignatureEncoding, K: DigestSigner<D, S> + SupportedPKey>
-    SigningAlgorithm for PKeyWithDigest<D, S, K>
+impl<
+        D: SupportedAsymmetricDigest,
+        S: SignatureEncoding,
+        K: DigestSigner<D, S> + SupportedAsymmetricKey,
+    > SigningAlgorithm for AsymmetricKeyWithDigest<D, S, K>
 {
     fn algorithm_type(&self) -> AlgorithmType {
-        PKeyWithDigest::algorithm_type(self)
+        AsymmetricKeyWithDigest::algorithm_type(self)
     }
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error> {
@@ -247,11 +262,14 @@ impl<D: SupportedPKeyDigest, S: SignatureEncoding, K: DigestSigner<D, S> + Suppo
     }
 }
 
-impl<D: SupportedPKeyDigest, S: SignatureEncoding, K: DigestVerifier<D, S> + SupportedPKey>
-    VerifyingAlgorithm for PKeyWithDigest<D, S, K>
+impl<
+        D: SupportedAsymmetricDigest,
+        S: SignatureEncoding,
+        K: DigestVerifier<D, S> + SupportedAsymmetricKey,
+    > VerifyingAlgorithm for AsymmetricKeyWithDigest<D, S, K>
 {
     fn algorithm_type(&self) -> AlgorithmType {
-        PKeyWithDigest::algorithm_type(self)
+        AsymmetricKeyWithDigest::algorithm_type(self)
     }
 
     fn verify_bytes(&self, header: &str, claims: &str, signature: &[u8]) -> Result<bool, Error> {
@@ -289,7 +307,8 @@ mod tests {
     #[test]
     fn rs256_sign() -> Result<(), Error> {
         let key = PrivateKey::from_pem_bytes(include_bytes!("../../../test/rs256-private.pem"))?;
-        let algorithm = PKeyWithDigest::<sha2::Sha256, rsa::pkcs1v15::Signature, _>::new(key);
+        let algorithm =
+            AsymmetricKeyWithDigest::<sha2::Sha256, rsa::pkcs1v15::Signature, _>::new(key);
         let result = algorithm.sign(&AlgOnly(Rs256).to_base64()?, CLAIMS)?;
         assert_eq!(result, RS256_SIGNATURE);
         Ok(())
@@ -298,7 +317,8 @@ mod tests {
     #[test]
     fn rs256_verify() -> Result<(), Error> {
         let key = PublicKey::from_pem_bytes(include_bytes!("../../../test/rs256-public.pem"))?;
-        let verifier = PKeyWithDigest::<sha2::Sha256, rsa::pkcs1v15::Signature, _>::new(key);
+        let verifier =
+            AsymmetricKeyWithDigest::<sha2::Sha256, rsa::pkcs1v15::Signature, _>::new(key);
         assert!(
             verifier.verify(&AlgOnly(Rs256).to_base64()?, CLAIMS, RS256_SIGNATURE)?,
             "signature should be valid"
@@ -309,11 +329,11 @@ mod tests {
     #[test]
     fn es256_sign() -> Result<(), Error> {
         let key = PrivateKey::from_pem_bytes(include_bytes!("../../../test/es256-private.pem"))?;
-        let signer = PKeyWithDigest::<sha2::Sha256, p256::ecdsa::Signature, _>::new(key);
+        let signer = AsymmetricKeyWithDigest::<sha2::Sha256, p256::ecdsa::Signature, _>::new(key);
         let signature = signer.sign(&AlgOnly(Es256).to_base64()?, CLAIMS)?;
 
         let key = PublicKey::from_pem_bytes(include_bytes!("../../../test/es256-public.pem"))?;
-        let verifier = PKeyWithDigest::<sha2::Sha256, p256::ecdsa::Signature, _>::new(key);
+        let verifier = AsymmetricKeyWithDigest::<sha2::Sha256, p256::ecdsa::Signature, _>::new(key);
         assert!(
             verifier.verify(&AlgOnly(Es256).to_base64()?, CLAIMS, &signature)?,
             "signature should be valid"
@@ -324,7 +344,7 @@ mod tests {
     #[test]
     fn es256_verify() -> Result<(), Error> {
         let key = PublicKey::from_pem_bytes(include_bytes!("../../../test/es256-public.pem"))?;
-        let verifier = PKeyWithDigest::<sha2::Sha256, p256::ecdsa::Signature, _>::new(key);
+        let verifier = AsymmetricKeyWithDigest::<sha2::Sha256, p256::ecdsa::Signature, _>::new(key);
         assert!(
             verifier.verify(
                 &AlgOnly(Es256).to_base64()?,

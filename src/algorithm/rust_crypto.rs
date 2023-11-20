@@ -16,9 +16,7 @@ use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
 use crate::SEPARATOR;
 
-mod pkey;
-
-pub use pkey::*;
+pub mod asymmetric;
 
 /// A trait used to make the implementation of `SigningAlgorithm` and
 /// `VerifyingAlgorithm` easier.

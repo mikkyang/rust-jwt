@@ -101,6 +101,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "openssl")]
 pub use crate::algorithm::openssl::PKeyWithDigest;
+pub use crate::algorithm::rust_crypto::asymmetric;
 pub use crate::algorithm::store::Store;
 pub use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 pub use crate::claims::Claims;
