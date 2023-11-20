@@ -120,11 +120,13 @@ mod tests {
     use openssl::pkey::PKey;
 
     // {"sub":"1234567890","name":"John Doe","admin":true}
-    const CLAIMS: &str =
-        "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
+    const CLAIMS: &str = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9";
 
     const RS256_SIGNATURE: &str =
     "cQsAHF2jHvPGFP5zTD8BgoJrnzEx6JNQCpupebWLFnOc2r_punDDTylI6Ia4JZNkvy2dQP-7W-DEbFQ3oaarHsDndqUgwf9iYlDQxz4Rr2nEZX1FX0-FMEgFPeQpdwveCgjtTYUbVy37ijUySN_rW-xZTrsh_Ug-ica8t-zHRIw";
+
+    const PREGENERATED_ES256_SIGNATURE: &str =
+        "6SgeIURSNz_qFcxsKQOWZmi_ALiBctj_ZINvce4AOa-OQn9QI6lh8P78FTZx5LQtOleF3XeBlGIAdYms_VPecA";
 
     #[test]
     fn rs256_sign() -> Result<(), Error> {
@@ -156,7 +158,7 @@ mod tests {
     }
 
     #[test]
-    fn es256() -> Result<(), Error> {
+    fn es256_sign() -> Result<(), Error> {
         let private_pem = include_bytes!("../../test/es256-private.pem");
         let private_key = PKeyWithDigest {
             digest: MessageDigest::sha256(),
@@ -164,9 +166,7 @@ mod tests {
         };
 
         let signature = private_key.sign(&AlgOnly(Es256).to_base64()?, CLAIMS)?;
-
         let public_pem = include_bytes!("../../test/es256-public.pem");
-
         let public_key = PKeyWithDigest {
             digest: MessageDigest::sha256(),
             key: PKey::public_key_from_pem(public_pem)?,
@@ -174,7 +174,26 @@ mod tests {
 
         let verification_result =
             public_key.verify(&AlgOnly(Es256).to_base64()?, CLAIMS, &signature)?;
+
         assert!(verification_result);
+        Ok(())
+    }
+
+    #[test]
+    fn es256_verify() -> Result<(), Error> {
+        let public_pem = include_bytes!("../../test/es256-public.pem");
+        let public_key = PKeyWithDigest {
+            digest: MessageDigest::sha256(),
+            key: PKey::public_key_from_pem(public_pem)?,
+        };
+
+        let verification_result = public_key.verify(
+            &AlgOnly(Es256).to_base64()?,
+            CLAIMS,
+            PREGENERATED_ES256_SIGNATURE,
+        )?;
+        assert!(verification_result);
+
         Ok(())
     }
 }

@@ -15,6 +15,11 @@ use hmac::{Hmac, Mac};
 use crate::algorithm::{AlgorithmType, SigningAlgorithm, VerifyingAlgorithm};
 use crate::error::Error;
 use crate::SEPARATOR;
+
+mod pkey;
+
+pub use pkey::*;
+
 /// A trait used to make the implementation of `SigningAlgorithm` and
 /// `VerifyingAlgorithm` easier.
 /// RustCrypto crates tend to have algorithm types defined at the type level,
