@@ -158,6 +158,13 @@ impl PrivateKey {
             _ => Err(self),
         }
     }
+
+    pub fn into_ec384(self) -> Result<p384::SecretKey, Self> {
+        match self {
+            PrivateKey::EC384(ec) => Ok(*ec),
+            _ => Err(self),
+        }
+    }
 }
 
 pub struct AsymmetricKeyWithDigest<K> {
