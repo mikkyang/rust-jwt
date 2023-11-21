@@ -15,11 +15,16 @@ pub enum VerifyingKey {
     RS384(Box<rsa::pkcs1v15::VerifyingKey<sha2::Sha384>>),
     RS512(Box<rsa::pkcs1v15::VerifyingKey<sha2::Sha512>>),
     EC256(Box<p256::ecdsa::VerifyingKey>),
+    EC384(Box<p384::ecdsa::VerifyingKey>),
 }
 
 impl VerifyingKey {
     pub fn from_ec256(key: p256::PublicKey) -> Self {
         Self::EC256(p256::ecdsa::VerifyingKey::from(key).into())
+    }
+
+    pub fn from_ec384(key: p384::PublicKey) -> Self {
+        Self::EC384(p384::ecdsa::VerifyingKey::from(key).into())
     }
 
     pub fn from_rsa256(key: RsaPublicKey) -> Self {
@@ -41,11 +46,16 @@ pub enum SigningKey {
     RS384(Box<rsa::pkcs1v15::SigningKey<sha2::Sha384>>),
     RS512(Box<rsa::pkcs1v15::SigningKey<sha2::Sha512>>),
     EC256(Box<p256::ecdsa::SigningKey>),
+    EC384(Box<p384::ecdsa::SigningKey>),
 }
 
 impl SigningKey {
     pub fn from_ec256(key: p256::SecretKey) -> Self {
         Self::EC256(p256::ecdsa::SigningKey::from(key).into())
+    }
+
+    pub fn from_ec384(key: p384::SecretKey) -> Self {
+        Self::EC384(p384::ecdsa::SigningKey::from(key).into())
     }
 
     pub fn from_rsa256(key: RsaPrivateKey) -> Self {
@@ -67,6 +77,7 @@ pub use ::{digest, ecdsa, p256, rsa, signature};
 pub enum PublicKey {
     RSA(Box<RsaPublicKey>),
     EC256(Box<p256::PublicKey>),
+    EC384(Box<p384::PublicKey>),
 }
 
 impl PublicKey {
@@ -75,7 +86,9 @@ impl PublicKey {
     }
 
     pub fn from_pem(encoded: &str) -> Result<Self, Error> {
-        if let Ok(ec) = encoded.parse::<p256::PublicKey>() {
+        if let Ok(ec) = encoded.parse::<p384::PublicKey>() {
+            Ok(PublicKey::EC384(ec.into()))
+        } else if let Ok(ec) = encoded.parse::<p256::PublicKey>() {
             Ok(PublicKey::EC256(ec.into()))
         } else if let Ok(rsa) = rsa::RsaPublicKey::from_public_key_pem(encoded) {
             Ok(PublicKey::RSA(rsa.into()))
@@ -97,12 +110,20 @@ impl PublicKey {
             _ => Err(self),
         }
     }
+
+    pub fn into_ec384(self) -> Result<p384::PublicKey, Self> {
+        match self {
+            PublicKey::EC384(ec) => Ok(*ec),
+            _ => Err(self),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub enum PrivateKey {
     RSA(Box<RsaPrivateKey>),
     EC256(Box<p256::SecretKey>),
+    EC384(Box<p384::SecretKey>),
 }
 
 impl PrivateKey {
@@ -111,7 +132,9 @@ impl PrivateKey {
     }
 
     pub fn from_pem(pem: &str) -> Result<Self, Error> {
-        if let Ok(ec) = pem.parse::<p256::SecretKey>() {
+        if let Ok(ec) = pem.parse::<p384::SecretKey>() {
+            Ok(PrivateKey::EC384(ec.into()))
+        } else if let Ok(ec) = pem.parse::<p256::SecretKey>() {
             Ok(PrivateKey::EC256(ec.into()))
         } else if let Ok(rsa) = rsa::RsaPrivateKey::from_pkcs8_pem(pem) {
             Ok(PrivateKey::RSA(rsa.into()))
@@ -154,6 +177,7 @@ impl SigningAlgorithm for AsymmetricKeyWithDigest<SigningKey> {
             SigningKey::RS384(_) => AlgorithmType::Rs384,
             SigningKey::RS512(_) => AlgorithmType::Rs512,
             SigningKey::EC256(_) => AlgorithmType::Es256,
+            SigningKey::EC384(_) => AlgorithmType::Es384,
         }
     }
 
@@ -187,6 +211,9 @@ impl SigningAlgorithm for AsymmetricKeyWithDigest<SigningKey> {
             SigningKey::EC256(key) => {
                 short_hand!(key, sha2::Sha256, p256::ecdsa::Signature);
             }
+            SigningKey::EC384(key) => {
+                short_hand!(key, sha2::Sha384, p384::ecdsa::Signature);
+            }
         }
     }
 }
@@ -198,6 +225,7 @@ impl VerifyingAlgorithm for AsymmetricKeyWithDigest<VerifyingKey> {
             VerifyingKey::RS384(_) => AlgorithmType::Rs384,
             VerifyingKey::RS512(_) => AlgorithmType::Rs512,
             VerifyingKey::EC256(_) => AlgorithmType::Es256,
+            VerifyingKey::EC384(_) => AlgorithmType::Es384,
         }
     }
 
@@ -228,6 +256,9 @@ impl VerifyingAlgorithm for AsymmetricKeyWithDigest<VerifyingKey> {
             }
             VerifyingKey::EC256(key) => {
                 short_hand!(key, sha2::Sha256, p256::ecdsa::Signature);
+            }
+            VerifyingKey::EC384(key) => {
+                short_hand!(key, sha2::Sha384, p384::ecdsa::Signature);
             }
         }
     }

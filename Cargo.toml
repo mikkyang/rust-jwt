@@ -28,6 +28,7 @@ serde_json = "1.0"
 ecdsa = { version = "0.16", features = ["verifying", "signing"] }
 rsa = { version = "0.9", features = ["sha2"] }
 p256 = { version = "0.13", features = ["pem"] }
+p384 = { version = "0.13", features = ["pem"] }
 pem = "3.0"
 
 [dependencies.openssl]
