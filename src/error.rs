@@ -25,6 +25,8 @@ pub enum Error {
     RustCryptoMacKeyLength(InvalidLength),
     TooManyComponents,
     Utf8(FromUtf8Error),
+    Signature(signature::Error),
+    InvalidKey,
     #[cfg(feature = "openssl")]
     OpenSsl(openssl::error::ErrorStack),
 }
@@ -48,6 +50,8 @@ impl fmt::Display for Error {
             Utf8(ref x) => write!(f, "{}", x),
             RustCryptoMac(ref x) => write!(f, "{}", x),
             RustCryptoMacKeyLength(ref x) => write!(f, "{}", x),
+            Signature(ref x) => write!(f, "{}", x),
+            InvalidKey => write!(f, "Invalid key"),
             #[cfg(feature = "openssl")]
             OpenSsl(ref x) => write!(f, "{}", x),
         }
@@ -71,5 +75,6 @@ error_wrap!(JsonError, Json);
 error_wrap!(FromUtf8Error, Utf8);
 error_wrap!(MacError, RustCryptoMac);
 error_wrap!(InvalidLength, RustCryptoMacKeyLength);
+error_wrap!(signature::Error, Signature);
 #[cfg(feature = "openssl")]
 error_wrap!(openssl::error::ErrorStack, Error::OpenSsl);

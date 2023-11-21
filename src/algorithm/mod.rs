@@ -10,12 +10,14 @@
 //! let hs256_key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret").unwrap();
 //! ```
 
+use base64::Engine;
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 
 #[cfg(feature = "openssl")]
 pub mod openssl;
+
 pub mod rust_crypto;
 pub mod store;
 
@@ -23,7 +25,9 @@ pub mod store;
 /// [JWA](https://tools.ietf.org/html/rfc7518) specification.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[derive(Default)]
 pub enum AlgorithmType {
+    #[default]
     Hs256,
     Hs384,
     Hs512,
@@ -38,12 +42,6 @@ pub enum AlgorithmType {
     Ps512,
     #[serde(rename = "none")]
     None,
-}
-
-impl Default for AlgorithmType {
-    fn default() -> Self {
-        AlgorithmType::Hs256
-    }
 }
 
 /// An algorithm capable of signing base64 encoded header and claims strings.
@@ -61,8 +59,8 @@ pub trait VerifyingAlgorithm {
     fn verify_bytes(&self, header: &str, claims: &str, signature: &[u8]) -> Result<bool, Error>;
 
     fn verify(&self, header: &str, claims: &str, signature: &str) -> Result<bool, Error> {
-        let signature_bytes = base64::decode_config(signature, base64::URL_SAFE_NO_PAD)?;
-        self.verify_bytes(header, claims, &*signature_bytes)
+        let signature_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(signature)?;
+        self.verify_bytes(header, claims, &signature_bytes)
     }
 }
 
