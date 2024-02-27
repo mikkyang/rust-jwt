@@ -15,7 +15,7 @@ edition = "2018"
 features = ["openssl"]
 
 [dependencies]
-base64 = "0.13"
+base64 = "0.21"
 crypto-common = "0.1"
 digest = "0.10"
 hmac = { version = "0.12", features = ["reset"] }

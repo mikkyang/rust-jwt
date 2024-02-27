@@ -162,8 +162,9 @@ pub trait ToBase64 {
 
 impl<T: Serialize> ToBase64 for T {
     fn to_base64(&self) -> Result<Cow<str>, Error> {
+        use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
         let json_bytes = serde_json::to_vec(&self)?;
-        let encoded_json_bytes = base64::encode_config(&json_bytes, base64::URL_SAFE_NO_PAD);
+        let encoded_json_bytes = BASE64_URL_SAFE_NO_PAD.encode(&json_bytes);
         Ok(Cow::Owned(encoded_json_bytes))
     }
 }
@@ -180,7 +181,8 @@ pub trait FromBase64: Sized {
 
 impl<T: for<'de> Deserialize<'de> + Sized> FromBase64 for T {
     fn from_base64<Input: ?Sized + AsRef<[u8]>>(raw: &Input) -> Result<Self, Error> {
-        let json_bytes = base64::decode_config(raw, base64::URL_SAFE_NO_PAD)?;
+        use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
+        let json_bytes = BASE64_URL_SAFE_NO_PAD.decode(raw)?;
         Ok(serde_json::from_slice(&json_bytes)?)
     }
 }
