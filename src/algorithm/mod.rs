@@ -61,7 +61,8 @@ pub trait VerifyingAlgorithm {
     fn verify_bytes(&self, header: &str, claims: &str, signature: &[u8]) -> Result<bool, Error>;
 
     fn verify(&self, header: &str, claims: &str, signature: &str) -> Result<bool, Error> {
-        let signature_bytes = base64::decode_config(signature, base64::URL_SAFE_NO_PAD)?;
+        use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
+        let signature_bytes = BASE64_URL_SAFE_NO_PAD.decode(signature)?;
         self.verify_bytes(header, claims, &*signature_bytes)
     }
 }

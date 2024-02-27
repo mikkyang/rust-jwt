@@ -53,10 +53,11 @@ where
     }
 
     fn sign(&self, header: &str, claims: &str) -> Result<String, Error> {
+        use base64::{prelude::BASE64_URL_SAFE_NO_PAD, Engine};
         let hmac = get_hmac_with_data(self, header, claims);
         let mac_result = hmac.finalize();
         let code = mac_result.into_bytes();
-        Ok(base64::encode_config(&code, base64::URL_SAFE_NO_PAD))
+        Ok(BASE64_URL_SAFE_NO_PAD.encode(&code))
     }
 }
 
